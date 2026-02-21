@@ -1,4 +1,8 @@
 Follow the conventional commit message format.
 Limit the name of the commit message to 50 characters.
-Leave a blank line between the subject and the body of the commit message.
-Use the body to describe the changes instead of explaining why the change was made.
+If the change requires a longer description, add a body to the commit message. The body should be no longer than 128 characters.
+Always add a "Changes" section to the body and use it to describe the changes instead of explaining why the change was made.
+The "Changes" section should be written in the present tense, displayed as a bullet point list and should be concise.
+Sign your commit messages with "Written by GitHub Copilot" to indicate that they were AI generated.
+Leave a blank line between each section of the commit message.
+Each section should have a header containing the name of the section followed by a colon. For example, "Changes:".
