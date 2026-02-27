@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Profile } from './entities/profile.entity';
 
 @Module({
   imports: [
@@ -12,7 +14,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       username: 'user',
       password: 'secret',
       database: 'qonsensus',
-      entities: [],
+      entities: [User, Profile],
       synchronize: true,
     }),
   ],
