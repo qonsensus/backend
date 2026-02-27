@@ -3,13 +3,11 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Profile } from './profile.entity';
-import { UserToConversation } from './userToConversation.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -31,10 +29,4 @@ export class User {
   @OneToOne(() => Profile, (profile) => profile.ownerId)
   @JoinColumn()
   profile: Profile;
-
-  @OneToMany(
-    () => UserToConversation,
-    (userToConversation) => userToConversation.user,
-  )
-  userToConversations: UserToConversation[];
 }

@@ -2,11 +2,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserToConversation } from './userToConversation.entity';
 
 @Entity({ name: 'conversations' })
 export class Conversation {
@@ -21,10 +19,4 @@ export class Conversation {
 
   @Column()
   name: string;
-
-  @OneToMany(
-    () => UserToConversation,
-    (userToConversation) => userToConversation.conversation,
-  )
-  userToConversations: UserToConversation[];
 }

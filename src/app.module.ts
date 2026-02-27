@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Profile } from './entities/profile.entity';
 import { Conversation } from './entities/conversation.entity';
-import { UserToConversation } from './entities/userToConversation.entity';
+import { ConversationMessage } from './entities/conversationMessage.entity';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { UserToConversation } from './entities/userToConversation.entity';
       username: 'user',
       password: 'secret',
       database: 'qonsensus',
-      entities: [User, Profile, Conversation, UserToConversation],
+      entities: [User, Profile, Conversation, ConversationMessage],
       synchronize: true,
     }),
   ],
