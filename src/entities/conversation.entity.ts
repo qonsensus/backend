@@ -2,17 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Profile } from './profile.entity';
 import { UserToConversation } from './userToConversation.entity';
 
-@Entity({ name: 'users' })
-export class User {
+@Entity({ name: 'conversations' })
+export class Conversation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -22,19 +19,12 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({ unique: true })
-  email: string;
-
   @Column()
-  passwordHash: string;
-
-  @OneToOne(() => Profile, (profile) => profile.ownerId)
-  @JoinColumn()
-  profile: Profile;
+  name: string;
 
   @OneToMany(
     () => UserToConversation,
-    (userToConversation) => userToConversation.user,
+    (userToConversation) => userToConversation.conversation,
   )
   userToConversations: UserToConversation[];
 }
