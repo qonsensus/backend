@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserToServer } from './userToServer.entity';
+import { ChatChannel } from './chatChannel.entity';
 
 @Entity({ name: 'servers' })
 export class Server {
@@ -38,4 +39,7 @@ export class Server {
     onDelete: 'CASCADE',
   })
   participants: UserToServer[];
+
+  @OneToMany(() => ChatChannel, (chatChannel) => chatChannel.server)
+  chatChannels: ChatChannel[];
 }
