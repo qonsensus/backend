@@ -9,6 +9,7 @@ import { ConversationMessage } from './entities/conversationMessage.entity';
 import { Server } from './entities/server.entity';
 import { UserToServer } from './entities/userToServer.entity';
 import { ChatChannel } from './entities/chatChannel.entity';
+import { UserToConversation } from './entities/userToConversation.entity';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ChatChannel } from './entities/chatChannel.entity';
         Server,
         UserToServer,
         ChatChannel,
+        UserToConversation,
       ],
       synchronize: true,
     }),

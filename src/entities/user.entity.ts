@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -10,6 +11,7 @@ import {
 } from 'typeorm';
 import { Profile } from './profile.entity';
 import { UserToServer } from './userToServer.entity';
+import { UserToConversation } from './userToConversation.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -36,4 +38,10 @@ export class User {
     onDelete: 'CASCADE',
   })
   servers: UserToServer[];
+
+  @ManyToOne(
+    () => UserToConversation,
+    (userToConversation) => userToConversation.user,
+  )
+  conversations: UserToConversation[];
 }
