@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -24,7 +23,7 @@ export class Conversation {
   @Column()
   name: string;
 
-  @ManyToOne(
+  @OneToMany(
     () => UserToConversation,
     (userToConversation) => userToConversation.conversation,
   )

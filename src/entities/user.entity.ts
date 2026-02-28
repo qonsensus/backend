@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -12,6 +11,7 @@ import {
 import { Profile } from './profile.entity';
 import { UserToServer } from './userToServer.entity';
 import { UserToConversation } from './userToConversation.entity';
+import { UserToChatChannel } from './userToChatChannel.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -39,9 +39,15 @@ export class User {
   })
   servers: UserToServer[];
 
-  @ManyToOne(
+  @OneToMany(
     () => UserToConversation,
     (userToConversation) => userToConversation.user,
   )
   conversations: UserToConversation[];
+
+  @OneToMany(
+    () => UserToChatChannel,
+    (userToChatChannel) => userToChatChannel.user,
+  )
+  chatChannelStates: UserToChatChannel[];
 }

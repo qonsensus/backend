@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Server } from './server.entity';
 import { ChatChannelMessage } from './chatChannelMessage.entity';
+import { UserToChatChannel } from './userToChatChannel.entity';
 
 @Entity({ name: 'chat_channels' })
 export class ChatChannel {
@@ -27,4 +28,10 @@ export class ChatChannel {
 
   @OneToMany(() => ChatChannelMessage, (message) => message.channel)
   messages: ChatChannelMessage[];
+
+  @OneToMany(
+    () => UserToChatChannel,
+    (userToChatChannel) => userToChatChannel.chatChannel,
+  )
+  userStates: UserToChatChannel[];
 }
