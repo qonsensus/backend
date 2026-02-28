@@ -6,6 +6,8 @@ import { User } from './entities/user.entity';
 import { Profile } from './entities/profile.entity';
 import { Conversation } from './entities/conversation.entity';
 import { ConversationMessage } from './entities/conversationMessage.entity';
+import { Server } from './entities/server.entity';
+import { UserToServer } from './entities/userToServer.entity';
 
 @Module({
   imports: [
@@ -16,7 +18,14 @@ import { ConversationMessage } from './entities/conversationMessage.entity';
       username: 'user',
       password: 'secret',
       database: 'qonsensus',
-      entities: [User, Profile, Conversation, ConversationMessage],
+      entities: [
+        User,
+        Profile,
+        Conversation,
+        ConversationMessage,
+        Server,
+        UserToServer,
+      ],
       synchronize: true,
     }),
   ],

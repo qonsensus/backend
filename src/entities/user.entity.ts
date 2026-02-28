@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Profile } from './profile.entity';
+import { UserToServer } from './userToServer.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -29,4 +31,9 @@ export class User {
   @OneToOne(() => Profile, (profile) => profile.ownerId)
   @JoinColumn()
   profile: Profile;
+
+  @OneToMany(() => UserToServer, (userToServer) => userToServer.user, {
+    onDelete: 'CASCADE',
+  })
+  servers: UserToServer[];
 }
