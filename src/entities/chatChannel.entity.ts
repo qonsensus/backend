@@ -2,10 +2,12 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Server } from './server.entity';
+import { ChatChannelMessage } from './chatChannelMessage.entity';
 
 @Entity({ name: 'chat_channels' })
 export class ChatChannel {
@@ -22,4 +24,7 @@ export class ChatChannel {
     onDelete: 'CASCADE',
   })
   server: Server;
+
+  @OneToMany(() => ChatChannelMessage, (message) => message.channel)
+  messages: ChatChannelMessage[];
 }
