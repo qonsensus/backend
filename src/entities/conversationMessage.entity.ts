@@ -2,7 +2,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Conversation } from './conversation.entity';
@@ -16,11 +16,13 @@ export class ConversationMessage {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToOne(() => Conversation, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Conversation, (conversation) => conversation.messages, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   conversation: Conversation;
 
-  @OneToOne(() => User, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()
   author: User;
 }
