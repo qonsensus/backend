@@ -1,4 +1,5 @@
 import {
+  Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
@@ -23,4 +24,7 @@ export class ChatChannelMessage {
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()
   author: User;
+
+  @Column()
+  content: string;
 }
