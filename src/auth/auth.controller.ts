@@ -2,6 +2,8 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { LoginDto } from './dtos/login.dto';
 import { AuthService } from './auth.service';
 import { RefreshDto } from './dtos/refresh.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { Public } from './public.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -16,6 +18,7 @@ export class AuthController {
    * @returns A promise that resolves to a TokenPair containing the access token, refresh token, and expiration time.
    */
   @Post('login')
+  @Public()
   async login(@Body() loginDto: LoginDto) {
     return this.userService.login(loginDto);
   }
@@ -28,6 +31,7 @@ export class AuthController {
    * @param refreshDto - The data transfer object containing the refresh token.
    * @returns A promise that resolves to a TokenPair containing the new access token, new refresh token, and expiration time.
    */
+  @ApiBearerAuth()
   @Post('refresh')
   async refreshToken(@Body() refreshDto: RefreshDto) {
     return this.userService.refreshToken(refreshDto.refreshToken);

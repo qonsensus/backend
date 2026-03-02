@@ -15,6 +15,7 @@ async function bootstrap() {
     .setTitle('Qonsensus API')
     .setDescription('API documentation for Qonsensus')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const swaggerUiOptions: SwaggerCustomOptions = {
     swaggerUrl: '/docs',
