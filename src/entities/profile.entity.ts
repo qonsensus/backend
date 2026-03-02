@@ -1,9 +1,11 @@
 import {
   Column,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { User } from './user.entity';
 
 export enum Status {
   DEFAULT = 'default',
@@ -41,6 +43,6 @@ export class Profile {
   @Column()
   bannerUrl: string;
 
-  @Column()
-  ownerId: string;
+  @OneToOne(() => User, (user) => user.profile)
+  owner: User;
 }

@@ -30,7 +30,7 @@ export class User {
   @Column()
   passwordHash: string;
 
-  @OneToOne(() => Profile, (profile) => profile.ownerId)
+  @OneToOne(() => Profile, (profile) => profile.owner, { onDelete: 'CASCADE' })
   @JoinColumn()
   profile: Profile;
 
