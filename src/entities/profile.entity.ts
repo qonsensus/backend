@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -22,13 +23,14 @@ export class Profile {
   updatedAt: Date;
 
   @Column()
+  @Index()
   displayName: string;
 
-  @Column()
-  bio: string;
+  @Column({ nullable: true })
+  bio?: string;
 
-  @Column()
-  motd: string;
+  @Column({ nullable: true })
+  motd?: string;
 
   @Column({
     type: 'enum',
@@ -37,11 +39,11 @@ export class Profile {
   })
   status: Status;
 
-  @Column()
-  avatarUrl: string;
+  @Column({ nullable: true })
+  avatarUrl?: string;
 
-  @Column()
-  bannerUrl: string;
+  @Column({ nullable: true })
+  bannerUrl?: string;
 
   @OneToOne(() => User, (user) => user.profile)
   owner: User;

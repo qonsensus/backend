@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   OneToMany,
   OneToOne,
@@ -24,7 +25,9 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  // make index on email for faster lookups and enforce uniqueness
   @Column({ unique: true })
+  @Index()
   email: string;
 
   @Column()
