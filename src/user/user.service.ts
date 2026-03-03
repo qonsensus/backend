@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   adjectives,
   colors,
@@ -21,9 +25,25 @@ export class UserService {
   ) {}
 
   /**
+   * Retrieves the profile associated with a given user ID.
+   * @param userId - The ID of the user whose profile is to be retrieved.
+   * @returns A promise that resolves to the Profile entity associated with the user.
+   * @throws BadRequestException if the user with the specified ID is not found.
+   */
+  async getProfileByUserId(userId: string): Promise<Profile> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['profile'],
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user.profile;
+  }
+
+  /**
    * Registers a new user with the provided email and password. A random display name is generated for the user's profile.
    * @param dto - The data transfer object containing the user's email and password.
    * @returns The newly created user entity.
+   * @throws BadRequestException if the password and confirmation do not match or if the email is already in use.
    */
   async registerUser(dto: RegisterUserDto): Promise<User> {
     // Validate that the password and confirmation match

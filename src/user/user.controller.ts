@@ -1,13 +1,29 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dtos/registerUser.dto';
 import { User } from '../entities/user.entity';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import type { Request } from 'express';
+import { Profile } from '../entities/profile.entity';
 
 @Controller('user')
 @ApiTags('user')
+@ApiBearerAuth()
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  /**
+   * Retrieves the profile of the currently authenticated user.
+   *
+   * @remarks This endpoint allows clients to fetch the profile information of the currently authenticated user. The user's identity is determined from the authentication token included in the request. If the user is successfully authenticated, their profile information is returned.
+   * @throws {401} Unauthorized - If the user is not authenticated or if the authentication token is invalid.
+   * @throws {404} Not Found - If the user associated with the authentication token does not exist.
+   */
+  @Get('me/profile')
+  async getMyProfile(@Req() req: Request): Promise<Profile> {
+    const userId: string = req['user'] as string;
+    return this.userService.getProfileByUserId(userId);
+  }
 
   /**
    * Register a new user.
