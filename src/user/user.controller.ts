@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dtos/registerUser.dto';
 import { User } from '../entities/user.entity';
@@ -11,6 +11,18 @@ import { Public } from '../auth/public.decorator';
 @ApiTags('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  /**
+   * Register a new user.
+   *
+   * @remarks This endpoint allows clients to register a new user by providing an email and password. The password must be confirmed by including a matching password confirmation field. If the registration is successful, the newly created user entity is returned.
+   * @throws {400} Bad Request - If the password and confirmation do not match, or if the email is already in use.
+   */
+  @Post()
+  @Public()
+  async registerUser(@Body() dto: RegisterUserDto): Promise<User> {
+    return this.userService.registerUser(dto);
+  }
 
   /**
    * Retrieves the profile of the currently authenticated user.
@@ -27,14 +39,16 @@ export class UserController {
   }
 
   /**
-   * Register a new user.
+   * Retrieves the profile of a user by their ID.
    *
-   * @remarks This endpoint allows clients to register a new user by providing an email and password. The password must be confirmed by including a matching password confirmation field. If the registration is successful, the newly created user entity is returned.
-   * @throws {400} Bad Request - If the password and confirmation do not match, or if the email is already in use.
+   * @remarks This endpoint allows clients to fetch the profile information of a user by providing their unique ID as a path parameter. The request must include a valid authentication token to access this endpoint. If the user with the specified ID exists and the requester is authenticated, the user's profile information is returned.
+   * @throws {401} Unauthorized - If the requester is not authenticated or if the authentication token is invalid.
+   * @throws {404} Not Found - If no user exists with the specified ID.
+   * @param userId
    */
-  @Post('register')
-  @Public()
-  async registerUser(@Body() dto: RegisterUserDto): Promise<User> {
-    return this.userService.registerUser(dto);
+  @Get(':id/profile')
+  @ApiBearerAuth()
+  async getUserProfile(@Param('id') userId: string): Promise<Profile> {
+    return this.userService.getProfileByUserId(userId);
   }
 }
