@@ -5,10 +5,10 @@ import { User } from '../entities/user.entity';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { Profile } from '../entities/profile.entity';
+import { Public } from '../auth/public.decorator';
 
 @Controller('user')
 @ApiTags('user')
-@ApiBearerAuth()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -20,6 +20,7 @@ export class UserController {
    * @throws {404} Not Found - If the user associated with the authentication token does not exist.
    */
   @Get('me/profile')
+  @ApiBearerAuth()
   async getMyProfile(@Req() req: Request): Promise<Profile> {
     const userId: string = req['user'] as string;
     return this.userService.getProfileByUserId(userId);
@@ -32,6 +33,7 @@ export class UserController {
    * @throws {400} Bad Request - If the password and confirmation do not match, or if the email is already in use.
    */
   @Post('register')
+  @Public()
   async registerUser(@Body() dto: RegisterUserDto): Promise<User> {
     return this.userService.registerUser(dto);
   }
