@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dtos/registerUser.dto';
 import { User } from '../entities/user.entity';
@@ -6,6 +6,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { Profile } from '../entities/profile.entity';
 import { Public } from '../auth/public.decorator';
+import { UpdateProfileDto } from './dtos/updateProfile.dto';
 
 @Controller('user')
 @ApiTags('user')
@@ -50,5 +51,23 @@ export class UserController {
   @ApiBearerAuth()
   async getUserProfile(@Param('id') userId: string): Promise<Profile> {
     return this.userService.getProfileByUserId(userId);
+  }
+
+  /**
+   * Updates the profile of the currently authenticated user.
+   *
+   * @remarks This endpoint allows clients to update the profile information of the currently authenticated user. The user's identity is determined from the authentication token included in the request. The request body should contain the new profile information (bio, display name, and MOTD). If the update is successful, the updated profile entity is returned.
+   * @throws {400} Bad Request - If the provided profile information is invalid.
+   * @throws {401} Unauthorized - If the user is not authenticated or if the authentication token is invalid.
+   * @throws {404} Not Found - If the user associated with the authentication token does not exist.
+   */
+  @Patch('me/profile')
+  @ApiBearerAuth()
+  async updateMyProfile(
+    @Req() req: Request,
+    @Body() dto: UpdateProfileDto,
+  ): Promise<Profile> {
+    const userId: string = req['user'] as string;
+    return this.userService.updateProfile(userId, dto);
   }
 }

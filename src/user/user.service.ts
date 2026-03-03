@@ -15,6 +15,7 @@ import { Repository } from 'typeorm';
 import { Profile } from '../entities/profile.entity';
 import { RegisterUserDto } from './dtos/registerUser.dto';
 import { hash } from 'bcrypt';
+import { UpdateProfileDto } from './dtos/updateProfile.dto';
 
 @Injectable()
 export class UserService {
@@ -23,6 +24,26 @@ export class UserService {
     @InjectRepository(Profile)
     private readonly profileRepository: Repository<Profile>,
   ) {}
+
+  /**
+   * Updates the profile information for a given user. This method retrieves the user by their ID, updates the associated profile with the provided data, and saves the changes to the database. If the user is not found, a NotFoundException is thrown.
+   * @param userId - The ID of the user whose profile is to be updated.
+   * @param dto - The data transfer object containing the new profile information (bio, display name, and MOTD).
+   * @returns A promise that resolves to the updated Profile entity.
+   * @throws NotFoundException if the user with the specified ID is not found.
+   */
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<Profile> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['profile'],
+    });
+    if (!user) throw new NotFoundException('User not found');
+    const profile = user.profile;
+    profile.bio = dto.bio;
+    profile.displayName = dto.displayName;
+    profile.motd = dto.motd;
+    return this.profileRepository.save(profile);
+  }
 
   /**
    * Retrieves the profile associated with a given user ID.
