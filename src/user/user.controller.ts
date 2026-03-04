@@ -7,11 +7,66 @@ import type { Request } from 'express';
 import { Profile } from '../entities/profile.entity';
 import { Public } from '../auth/public.decorator';
 import { UpdateProfileDto } from './dtos/updateProfile.dto';
+import { Friendship } from '../entities/friendship.entity';
 
 @Controller('user')
 @ApiTags('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  /**
+   * Sends a friend request from the currently authenticated user to another user specified by their ID.
+   *
+   * @remarks This endpoint allows the currently authenticated user to send a friend request to another user by providing the target user's ID as a path parameter. The request must include a valid authentication token to access this endpoint. If the friend request is successfully sent, the newly created friendship entity representing the pending friend request is returned.
+   * @throws {400} Bad Request - If the specified friend ID is invalid or if a friend request already exists between the users.
+   * @throws {401} Unauthorized - If the user is not authenticated or if the authentication token is invalid.
+   * @throws {404} Not Found - If no user exists with the specified friend ID.
+   */
+  @Post('me/friendship/request/:friendId')
+  @ApiBearerAuth()
+  async sendFriendRequest(
+    @Req() req: Request,
+    @Param('friendId') friendId: string,
+  ): Promise<Friendship> {
+    const userId: string = req['user'] as string;
+    return await this.userService.sendFriendRequest(userId, friendId);
+  }
+
+  /**
+   * Accepts a pending friend request for the currently authenticated user.
+   *
+   * @remarks This endpoint allows the currently authenticated user to accept a pending friend request by providing the friendship ID as a path parameter. The request must include a valid authentication token to access this endpoint. If the friend request is successfully accepted, the updated friendship entity representing the accepted friendship is returned.
+   * @throws {400} Bad Request - If the specified friendship ID is invalid or if the friend request cannot be accepted.
+   * @throws {401} Unauthorized - If the user is not authenticated or if the authentication token is invalid.
+   * @throws {404} Not Found - If no friendship exists with the specified ID or if the friendship does not belong to the authenticated user.
+   */
+  @Patch('me/friendship/:friendshipId/accept')
+  @ApiBearerAuth()
+  async acceptFriendRequest(
+    @Req() req: Request,
+    @Param('friendshipId') friendshipId: string,
+  ): Promise<Friendship> {
+    const userId: string = req['user'] as string;
+    return await this.userService.acceptFriendRequest(userId, friendshipId);
+  }
+
+  /**
+   * Rejects a pending friend request for the currently authenticated user.
+   *
+   * @remarks This endpoint allows the currently authenticated user to reject a pending friend request by providing the friendship ID as a path parameter. The request must include a valid authentication token to access this endpoint. If the friend request is successfully rejected, the updated friendship entity representing the rejected friendship is returned.
+   * @throws {400} Bad Request - If the specified friendship ID is invalid or if the friend request cannot be rejected.
+   * @throws {401} Unauthorized - If the user is not authenticated or if the authentication token is invalid.
+   * @throws {404} Not Found - If no friendship exists with the specified ID or if the friendship does not belong to the authenticated user.
+   */
+  @Patch('me/friendship/:friendshipId/reject')
+  @ApiBearerAuth()
+  async rejectFriendRequest(
+    @Req() req: Request,
+    @Param('friendshipId') friendshipId: string,
+  ): Promise<Friendship> {
+    const userId: string = req['user'] as string;
+    return await this.userService.rejectFriendRequest(userId, friendshipId);
+  }
 
   /**
    * Register a new user.
