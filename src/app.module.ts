@@ -14,6 +14,7 @@ import { ChatChannelMessage } from './entities/chatChannelMessage.entity';
 import { UserToChatChannel } from './entities/userToChatChannel.entity';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { Friendship } from './entities/friendship.entity';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AuthModule } from './auth/auth.module';
         UserToConversation,
         ChatChannelMessage,
         UserToChatChannel,
+        Friendship,
       ],
       synchronize: true,
     }),

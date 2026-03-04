@@ -13,6 +13,7 @@ import { Profile } from './profile.entity';
 import { UserToServer } from './userToServer.entity';
 import { UserToConversation } from './userToConversation.entity';
 import { UserToChatChannel } from './userToChatChannel.entity';
+import { Friendship } from './friendship.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -53,4 +54,10 @@ export class User {
     (userToChatChannel) => userToChatChannel.user,
   )
   chatChannelStates: UserToChatChannel[];
+
+  @OneToMany(() => Friendship, (friendship) => friendship.requester)
+  sentFriendships: Friendship[];
+
+  @OneToMany(() => Friendship, (friendship) => friendship.recipient)
+  receivedFriendships: Friendship[];
 }
