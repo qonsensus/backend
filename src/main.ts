@@ -26,6 +26,10 @@ async function bootstrap() {
   SwaggerModule.setup('/docs', app, documentFactory, swaggerUiOptions);
   // endregion
 
+  app.enableCors({
+    origin: ['http://localhost:3001'],
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();
