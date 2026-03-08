@@ -17,6 +17,10 @@ import { RegisterUserDto } from './dtos/registerUser.dto';
 import { hash } from 'bcrypt';
 import { UpdateProfileDto } from './dtos/updateProfile.dto';
 import { Friendship, FriendshipStatus } from '../entities/friendship.entity';
+import { RegistrationResponseDto } from '../auth/dtos/registrationResponse.dto';
+import { LoginDto } from '../auth/dtos/login.dto';
+import { AuthService } from '../auth/auth.service';
+import { TokenPair } from '../auth/dtos/tokenPair.dto';
 
 @Injectable()
 export class UserService {
@@ -26,6 +30,7 @@ export class UserService {
     private readonly profileRepository: Repository<Profile>,
     @InjectRepository(Friendship)
     private readonly friendshipRepository: Repository<Friendship>,
+    private readonly authService: AuthService,
   ) {}
 
   /**
@@ -171,7 +176,7 @@ export class UserService {
    * @returns The newly created user entity.
    * @throws BadRequestException if the password and confirmation do not match or if the email is already in use.
    */
-  async registerUser(dto: RegisterUserDto): Promise<Profile> {
+  async registerUser(dto: RegisterUserDto): Promise<RegistrationResponseDto> {
     // Validate that the password and confirmation match
     if (dto.password !== dto.passwordConfirmation)
       throw new BadRequestException('Passwords and confirmation do not match');
@@ -195,7 +200,15 @@ export class UserService {
 
     // Save the user to the database and return the created user entity
     await this.userRepository.save(user);
-    return userProfile;
+    const loginData: LoginDto = {
+      email: user.email,
+      password: dto.password,
+    };
+    const tokenPair: TokenPair = await this.authService.login(loginData);
+    return {
+      profile: userProfile,
+      tokenPair,
+    };
   }
 
   async hashPassword(plainPassword: string): Promise<string> {

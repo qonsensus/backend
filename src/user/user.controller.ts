@@ -7,6 +7,7 @@ import { Profile } from '../entities/profile.entity';
 import { Public } from '../auth/public.decorator';
 import { UpdateProfileDto } from './dtos/updateProfile.dto';
 import { Friendship } from '../entities/friendship.entity';
+import { RegistrationResponseDto } from '../auth/dtos/registrationResponse.dto';
 
 @Controller('user')
 @ApiTags('user')
@@ -75,7 +76,9 @@ export class UserController {
    */
   @Post()
   @Public()
-  async registerUser(@Body() dto: RegisterUserDto): Promise<Profile> {
+  async registerUser(
+    @Body() dto: RegisterUserDto,
+  ): Promise<RegistrationResponseDto> {
     return this.userService.registerUser(dto);
   }
 
