@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dtos/registerUser.dto';
-import { User } from '../entities/user.entity';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { Profile } from '../entities/profile.entity';
@@ -76,7 +75,7 @@ export class UserController {
    */
   @Post()
   @Public()
-  async registerUser(@Body() dto: RegisterUserDto): Promise<User> {
+  async registerUser(@Body() dto: RegisterUserDto): Promise<Profile> {
     return this.userService.registerUser(dto);
   }
 

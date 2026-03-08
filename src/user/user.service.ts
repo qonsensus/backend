@@ -171,7 +171,7 @@ export class UserService {
    * @returns The newly created user entity.
    * @throws BadRequestException if the password and confirmation do not match or if the email is already in use.
    */
-  async registerUser(dto: RegisterUserDto): Promise<User> {
+  async registerUser(dto: RegisterUserDto): Promise<Profile> {
     // Validate that the password and confirmation match
     if (dto.password !== dto.passwordConfirmation)
       throw new BadRequestException('Passwords and confirmation do not match');
@@ -194,7 +194,8 @@ export class UserService {
     user.profile = userProfile;
 
     // Save the user to the database and return the created user entity
-    return this.userRepository.save(user);
+    await this.userRepository.save(user);
+    return userProfile;
   }
 
   async hashPassword(plainPassword: string): Promise<string> {
