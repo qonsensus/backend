@@ -26,6 +26,10 @@ export class Profile {
   @Index()
   displayName: string;
 
+  @Column({ unique: true })
+  @Index()
+  handle: string;
+
   @Column({ nullable: true })
   bio?: string;
 
