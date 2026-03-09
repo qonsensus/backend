@@ -94,11 +94,13 @@ export class UserService {
   }
 
   private generateRandomNumbers(length: number): string {
-    const customConfig: Config = {
-      dictionaries: [Array.from({ length: 10 }, (_, i) => i.toString())],
-      separator: '',
-      length,
-    };
-    return uniqueNamesGenerator(customConfig);
+    let result = '';
+    const characters = '0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charactersLength);
+      result += characters.charAt(randomIndex);
+    }
+    return result;
   }
 }

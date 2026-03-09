@@ -25,14 +25,12 @@ export class ProfileService {
    * @throws NotFoundException if the user or profile is not found
    */
   async getProfileByUserId(userId: string): Promise<Profile> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
-    const profile = await this.profileRepository.findOne({
-      where: { owner: user },
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['profile'],
     });
-    if (!profile)
-      throw new NotFoundException(`Profile for user id ${userId} not found`);
-    return profile;
+    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
+    return user.profile;
   }
 
   /**
@@ -47,23 +45,24 @@ export class ProfileService {
     userId: string,
     payload: UpdateProfileDto,
   ): Promise<Profile> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
-    const profile = await this.profileRepository.findOne({
-      where: { owner: user },
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['profile'],
     });
-    if (!profile)
-      throw new NotFoundException(`Profile for user id ${userId} not found`);
-    if (await this.handleExists(payload.handle))
+    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
+    if (
+      user.profile.handle !== payload.handle &&
+      (await this.handleExists(payload.handle))
+    )
       throw new BadRequestException(
         `Handle ${payload.handle} is already taken`,
       );
 
-    profile.displayName = payload.displayName;
-    profile.bio = payload.bio;
-    profile.motd = payload.motd;
-    profile.handle = payload.handle;
-    return this.profileRepository.save(profile);
+    user.profile.displayName = payload.displayName;
+    user.profile.bio = payload.bio;
+    user.profile.motd = payload.motd;
+    user.profile.handle = payload.handle;
+    return this.profileRepository.save(user.profile);
   }
 
   /**
