@@ -6,7 +6,7 @@ import { Public } from '../auth/public.decorator';
 import { RegistrationResponseDto } from '../auth/dtos/registrationResponse.dto';
 
 @Controller('user')
-@ApiTags('user')
+@ApiTags('Users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

@@ -16,6 +16,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { Friendship } from './entities/friendship.entity';
 import { FriendsModule } from './friends/friends.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { FriendsModule } from './friends/friends.module';
     UserModule,
     AuthModule,
     FriendsModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

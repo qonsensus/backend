@@ -14,4 +14,9 @@ export class UpdateProfileDto {
    * @example "Living life one bean at a time!"
    */
   motd: string;
+  /**
+   * The user's handle is a unique identifier that can be used to mention or refer to the user within the platform. It is often used in URLs, mentions, and other contexts where a unique identifier is needed. The handle is typically chosen by the user and must be unique across the platform. It can be updated by the user, but care should be taken to ensure that it remains unique.
+   * @example "beanlover123"
+   */
+  handle: string;
 }
