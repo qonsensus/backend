@@ -15,6 +15,7 @@ import { UserToChatChannel } from './entities/userToChatChannel.entity';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { Friendship } from './entities/friendship.entity';
+import { FriendsModule } from './friends/friends.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { Friendship } from './entities/friendship.entity';
     }),
     UserModule,
     AuthModule,
+    FriendsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
