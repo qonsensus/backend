@@ -1,10 +1,7 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   adjectives,
+  animals,
   colors,
   Config,
   uniqueNamesGenerator,
@@ -15,7 +12,6 @@ import { Repository } from 'typeorm';
 import { Profile } from '../entities/profile.entity';
 import { RegisterUserDto } from './dtos/registerUser.dto';
 import { hash } from 'bcrypt';
-import { UpdateProfileDto } from './dtos/updateProfile.dto';
 import { RegistrationResponseDto } from '../auth/dtos/registrationResponse.dto';
 import { LoginDto } from '../auth/dtos/login.dto';
 import { AuthService } from '../auth/auth.service';
@@ -29,41 +25,6 @@ export class UserService {
     private readonly profileRepository: Repository<Profile>,
     private readonly authService: AuthService,
   ) {}
-
-  /**
-   * Updates the profile information for a given user. This method retrieves the user by their ID, updates the associated profile with the provided data, and saves the changes to the database. If the user is not found, a NotFoundException is thrown.
-   * @param userId - The ID of the user whose profile is to be updated.
-   * @param dto - The data transfer object containing the new profile information (bio, display name, and MOTD).
-   * @returns A promise that resolves to the updated Profile entity.
-   * @throws NotFoundException if the user with the specified ID is not found.
-   */
-  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<Profile> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['profile'],
-    });
-    if (!user) throw new NotFoundException('User not found');
-    const profile = user.profile;
-    profile.bio = dto.bio;
-    profile.displayName = dto.displayName;
-    profile.motd = dto.motd;
-    return this.profileRepository.save(profile);
-  }
-
-  /**
-   * Retrieves the profile associated with a given user ID.
-   * @param userId - The ID of the user whose profile is to be retrieved.
-   * @returns A promise that resolves to the Profile entity associated with the user.
-   * @throws BadRequestException if the user with the specified ID is not found.
-   */
-  async getProfileByUserId(userId: string): Promise<Profile> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['profile'],
-    });
-    if (!user) throw new NotFoundException('User not found');
-    return user.profile;
-  }
 
   /**
    * Registers a new user with the provided email and password. A random display name is generated for the user's profile.
@@ -85,6 +46,7 @@ export class UserService {
     // Create a new profile with a random display name
     const userProfile = this.profileRepository.create();
     userProfile.displayName = this.generateRandomName();
+    userProfile.handle = this.generateRandomHandle();
     await this.profileRepository.save(userProfile);
 
     // Create a new user and associate it with the profile
@@ -106,17 +68,36 @@ export class UserService {
     };
   }
 
-  async hashPassword(plainPassword: string): Promise<string> {
+  private async hashPassword(plainPassword: string): Promise<string> {
     // TODO: This should be globally configured and not hardcoded here
     const SALT_ROUNDS = 12;
     return hash(plainPassword, SALT_ROUNDS);
   }
 
-  generateRandomName(): string {
+  private generateRandomName(): string {
     const customConfig: Config = {
       dictionaries: [adjectives, colors],
       separator: '-',
       length: 2,
+    };
+    return uniqueNamesGenerator(customConfig);
+  }
+
+  private generateRandomHandle(): string {
+    const customConfig: Config = {
+      dictionaries: [adjectives, colors, animals],
+      separator: '_',
+      length: 3,
+    };
+    const handle = uniqueNamesGenerator(customConfig);
+    return `${handle}_${this.generateRandomNumbers(6)}`;
+  }
+
+  private generateRandomNumbers(length: number): string {
+    const customConfig: Config = {
+      dictionaries: [Array.from({ length: 10 }, (_, i) => i.toString())],
+      separator: '',
+      length,
     };
     return uniqueNamesGenerator(customConfig);
   }
