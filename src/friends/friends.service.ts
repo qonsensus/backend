@@ -116,21 +116,19 @@ export class FriendsService {
    * The results are ordered by the creation date of the friendship request in descending order (most recent first).
    * @param userId - The ID of the user whose outgoing friendship requests are to be retrieved.
    * @param top - The maximum number of friendship requests to return per page.
-   * @param skip - The number of friendship requests to skip for pagination (calculated as (page - 1) * top).
    * @param page - The current page number for pagination (starting from 1).
    * @returns A list of OutgoingFrienshipRequestDto objects representing the outgoing friendship requests for the specified user.
    */
   async getAllOutgoingFriendRequests(
     userId: string,
     top: number,
-    skip: number,
     page: number,
   ): Promise<OutgoingFrienshipRequestDto[]> {
     const friendships = await this.friendshipRepository.find({
       where: { requesterId: userId, status: FriendshipStatus.PENDING },
       order: { createdAt: 'DESC' },
       take: top,
-      skip: skip + (page - 1) * top,
+      skip: (page - 1) * top,
       relations: ['recipient', 'recipient.profile'],
     });
     const outgoingRequests: OutgoingFrienshipRequestDto[] = [];
@@ -150,21 +148,19 @@ export class FriendsService {
    * The results are ordered by the creation date of the friendship request in descending order (most recent first).
    * @param userId - The ID of the user whose incoming friendship requests are to be retrieved.
    * @param top - The maximum number of friendship requests to return per page.
-   * @param skip - The number of friendship requests to skip for pagination (calculated as (page - 1) * top).
    * @param page - The current page number for pagination (starting from 1).
    * @returns A list of IncomingFrienshipRequestDto objects representing the incoming friendship requests for the specified user.
    */
   async getAllIncomingFriendRequests(
     userId: string,
     top: number,
-    skip: number,
     page: number,
   ): Promise<IncomingFrienshipRequestDto[]> {
     const friendships = await this.friendshipRepository.find({
       where: { recipientId: userId, status: FriendshipStatus.PENDING },
       order: { createdAt: 'DESC' },
       take: top,
-      skip: skip + (page - 1) * top,
+      skip: (page - 1) * top,
       relations: ['requester', 'requester.profile'],
     });
     const incomingRequests: IncomingFrienshipRequestDto[] = [];
@@ -184,14 +180,12 @@ export class FriendsService {
    * The results are ordered by the date the friendship was accepted (updatedAt) in descending order (most recent first).
    * @param userId - The ID of the user whose friends are to be retrieved.
    * @param top - The maximum number of friends to return per page.
-   * @param skip - The number of friends to skip for pagination (calculated as (page - 1) * top).
    * @param page - The current page number for pagination (starting from 1).
    * @returns A list of FriendshipListItemDto objects representing the friends of the specified user, including the date they became friends and the friend's profile information.
    */
   async getAllFriends(
     userId: string,
     top: number,
-    skip: number,
     page: number,
   ): Promise<FriendshipListItemDto[]> {
     const friendships = await this.friendshipRepository.find({
@@ -201,7 +195,7 @@ export class FriendsService {
       ],
       order: { updatedAt: 'DESC' },
       take: top,
-      skip: skip + (page - 1) * top,
+      skip: (page - 1) * top,
       relations: [
         'recipient',
         'requester',
