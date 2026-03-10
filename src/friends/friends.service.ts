@@ -20,6 +20,49 @@ export class FriendsService {
   ) {}
 
   /**
+   * Sends a friendship request from one user (requester) to another user (recipient) by creating a new Friendship record with status PENDING. Validations are performed to ensure that the requester and recipient exist, that the requester is not sending a request to themselves, and that there is no existing friendship or pending request between the two users.
+   * @param requesterId - The ID of the user sending the friendship request (requester).
+   * @param recipientId - The ID of the user receiving the friendship request (recipient).
+   * @throws BadRequestException if the requester is trying to send a request to themselves or if there is already an existing friendship or pending request between the two users.
+   * @throws NotFoundException if either the requester or recipient user does not exist.
+   * @returns The created Friendship entity representing the new friendship request with status PENDING.
+   */
+  async sendFriendRequest(
+    requesterId: string,
+    recipientId: string,
+  ): Promise<Friendship> {
+    if (requesterId === recipientId) {
+      throw new BadRequestException('Cannot send friend request to yourself');
+    }
+    const requester = await this.userRepository.findOne({
+      where: { id: requesterId },
+    });
+    const recipient = await this.userRepository.findOne({
+      where: { id: recipientId },
+    });
+    if (!requester || !recipient) {
+      throw new NotFoundException('Requester or recipient not found');
+    }
+    const existingFriendship = await this.friendshipRepository.findOne({
+      where: [
+        { requesterId, recipientId },
+        { requesterId: recipientId, recipientId: requesterId },
+      ],
+    });
+    if (existingFriendship) {
+      throw new BadRequestException(
+        'Friend request already exists or you are already friends',
+      );
+    }
+    const friendship = this.friendshipRepository.create({
+      requester,
+      recipient,
+      status: FriendshipStatus.PENDING,
+    });
+    return this.friendshipRepository.save(friendship);
+  }
+
+  /**
    * Accepts a friendship request by updating the status to ACCEPTED. Only the recipient of the request can accept it.
    * @param friendshipId - The ID of the friendship request to accept.
    * @param userId - The ID of the user accepting the friendship request (must be the recipient).
