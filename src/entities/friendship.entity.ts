@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -29,6 +30,7 @@ export class Friendship {
     type: 'enum',
     enum: FriendshipStatus,
   })
+  @Index()
   status: FriendshipStatus;
 
   @Column()
