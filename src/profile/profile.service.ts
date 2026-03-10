@@ -74,4 +74,11 @@ export class ProfileService {
     const profile = await this.profileRepository.findOne({ where: { handle } });
     return !!profile;
   }
+
+  async getProfileByHandle(handle: string): Promise<Profile> {
+    const profile = await this.profileRepository.findOne({ where: { handle } });
+    if (!profile)
+      throw new NotFoundException(`Profile with handle ${handle} not found`);
+    return profile;
+  }
 }

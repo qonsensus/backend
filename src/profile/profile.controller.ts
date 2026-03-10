@@ -13,6 +13,18 @@ export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   /**
+   * Get a user's profile by their handle.
+   *
+   * @remarks This endpoint retrieves a user's profile information based on their unique handle. The handle is provided as a query parameter, and the corresponding profile is fetched from the database. If no profile is found with the given handle, an appropriate error response is returned.
+   * @return The profile associated with the provided handle.
+   * @throws {404} if no profile is found with the given handle.
+   */
+  @Get('by-handle')
+  getProfileByHandle(@Query('handle') handle: string): Promise<Profile> {
+    return this.profileService.getProfileByHandle(handle);
+  }
+
+  /**
    * Get the profile of the currently authenticated user.
    *
    * @remarks This endpoint retrieves the profile information of the user making the request. The user's ID is extracted from the request object, and the corresponding profile is fetched from the database. If the user or profile is not found, an appropriate error response is returned.
