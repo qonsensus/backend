@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   Entity,
   Index,
-  JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -35,7 +34,6 @@ export class User {
   passwordHash: string;
 
   @OneToOne(() => Profile, (profile) => profile.owner, { onDelete: 'CASCADE' })
-  @JoinColumn()
   profile: Profile;
 
   @OneToMany(() => UserToServer, (userToServer) => userToServer.user, {

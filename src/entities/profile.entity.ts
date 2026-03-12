@@ -2,6 +2,7 @@ import {
   Column,
   Entity,
   Index,
+  JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -50,5 +51,9 @@ export class Profile {
   bannerUrl?: string;
 
   @OneToOne(() => User, (user) => user.profile)
+  @JoinColumn()
   owner: User;
+
+  @Column({ nullable: true })
+  ownerId: string;
 }
