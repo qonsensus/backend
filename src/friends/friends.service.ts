@@ -10,6 +10,7 @@ import { User } from '../entities/user.entity';
 import { FriendshipListItemDto } from './dtos/friendshipListItem.dto';
 import { IncomingFrienshipRequestDto } from './dtos/incomingFrienshipRequest.dto';
 import { OutgoingFrienshipRequestDto } from './dtos/outgoingFrienshipRequest.dto';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @Injectable()
 export class FriendsService {
@@ -17,6 +18,7 @@ export class FriendsService {
     @InjectRepository(Friendship)
     private readonly friendshipRepository: Repository<Friendship>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   /**
@@ -36,6 +38,7 @@ export class FriendsService {
     }
     const requester = await this.userRepository.findOne({
       where: { id: requesterId },
+      relations: ['profile'],
     });
     const recipient = await this.userRepository.findOne({
       where: { id: recipientId },
@@ -59,7 +62,12 @@ export class FriendsService {
       recipient,
       status: FriendshipStatus.PENDING,
     });
-    return this.friendshipRepository.save(friendship);
+    const savedEntity = await this.friendshipRepository.save(friendship);
+    this.notificationsGateway.notifyFriendRequest(
+      recipientId,
+      `You have a new friend request from ${requester.profile.displayName}`,
+    );
+    return savedEntity;
   }
 
   /**

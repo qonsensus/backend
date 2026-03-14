@@ -19,6 +19,18 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  async validateToken(token: string): Promise<User> {
+    const payload = this.jwtService.verify<JwtPayload>(token);
+    if (payload.type !== JwtTokenType.ACCESS) {
+      throw new BadRequestException('Invalid token type');
+    }
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
   /**
    * Handles user login by validating credentials and generating JWT tokens.
    * @param dto - The login data transfer object containing email and password.
@@ -50,25 +62,21 @@ export class AuthService {
    * @throws NotFoundException if the user associated with the token is not found.
    */
   async refreshToken(refreshToken: string): Promise<TokenPair> {
-    try {
-      const payload = this.jwtService.verify<JwtPayload>(refreshToken);
-      if (payload.type !== JwtTokenType.REFRESH) {
-        throw new BadRequestException('Invalid token type');
-      }
-      const user = await this.userRepository.findOne({
-        where: { id: payload.sub },
-      });
-      if (!user) throw new NotFoundException('User not found');
-      const accessToken = await this.getAccessToken(user.id);
-      const newRefreshToken = await this.getRefreshToken(user.id);
-      return {
-        accessToken: accessToken.token,
-        refreshToken: newRefreshToken,
-        expiresIn: accessToken.expiresAt,
-      };
-    } catch {
-      throw new BadRequestException('Invalid refresh token');
+    const payload = this.jwtService.verify<JwtPayload>(refreshToken);
+    if (payload.type !== JwtTokenType.REFRESH) {
+      throw new BadRequestException('Invalid token type');
     }
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    const accessToken = await this.getAccessToken(user.id);
+    const newRefreshToken = await this.getRefreshToken(user.id);
+    return {
+      accessToken: accessToken.token,
+      refreshToken: newRefreshToken,
+      expiresIn: accessToken.expiresAt,
+    };
   }
 
   private async getAccessToken(
