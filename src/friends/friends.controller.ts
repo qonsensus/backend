@@ -76,7 +76,7 @@ export class FriendsController {
     @Param('requestId') requestId: string,
   ): Promise<Friendship> {
     const userId = req['user'] as string;
-    return this.friendsService.declineFriendRequest(userId, requestId);
+    return this.friendsService.declineFriendRequest(requestId, userId);
   }
 
   /**
@@ -91,7 +91,7 @@ export class FriendsController {
     @Param('requestId') requestId: string,
   ): Promise<Friendship> {
     const userId = req['user'] as string;
-    return this.friendsService.acceptFriendRequest(userId, requestId);
+    return this.friendsService.acceptFriendRequest(requestId, userId);
   }
 
   /**

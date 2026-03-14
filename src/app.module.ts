@@ -27,6 +27,7 @@ import { ProfileModule } from './profile/profile.module';
       username: 'user',
       password: 'secret',
       database: 'qonsensus',
+      logging: true,
       entities: [
         User,
         Profile,
