@@ -5,6 +5,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
+import { IncomingFriendRequestWsDto } from './dtos/incomingFriendRequest.ws.dto';
 
 @WebSocketGateway({
   cors: {
@@ -23,12 +24,13 @@ export class NotificationsGateway implements OnGatewayConnection {
 
     const room = `user:${user.id}`;
     await client.join(room);
-
-    console.log(`Client ${client.id} joined ${room}`);
   }
 
-  notifyFriendRequest(recipientId: string, message: string) {
+  notifyFriendRequest(
+    recipientId: string,
+    payload: IncomingFriendRequestWsDto,
+  ) {
     const room = `user:${recipientId}`;
-    this.server.to(room).emit('friendRequest', { message });
+    this.server.to(room).emit('friendRequest', payload);
   }
 }

@@ -63,10 +63,17 @@ export class FriendsService {
       status: FriendshipStatus.PENDING,
     });
     const savedEntity = await this.friendshipRepository.save(friendship);
-    this.notificationsGateway.notifyFriendRequest(
-      recipientId,
-      `You have a new friend request from ${requester.profile.displayName}`,
-    );
+    this.notificationsGateway.notifyFriendRequest(recipientId, {
+      friendshipId: savedEntity.id,
+      senderAvatarUrl: requester.profile.avatarUrl || '',
+      senderDisplayName: requester.profile.displayName,
+      listItem: {
+        id: savedEntity.id,
+        requestedAt: savedEntity.createdAt,
+        requesterId: requester.id,
+        requesterProfile: requester.profile,
+      },
+    });
     return savedEntity;
   }
 

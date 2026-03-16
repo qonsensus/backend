@@ -1,6 +1,4 @@
-import { IRegisterUser } from '@skostadinov0141/quonsensus-core';
-
-export class RegisterUserDto implements IRegisterUser {
+export class RegisterUserDto {
   email: string;
   password: string;
   passwordConfirmation: string;

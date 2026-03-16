@@ -6,6 +6,7 @@ import {
   SwaggerCustomOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
+import { IncomingFriendRequestWsDto } from './notifications/dtos/incomingFriendRequest.ws.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,7 +23,9 @@ async function bootstrap() {
     jsonDocumentUrl: '/docs/spec',
   };
   const documentFactory = () =>
-    SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.createDocument(app, swaggerConfig, {
+      extraModels: [IncomingFriendRequestWsDto],
+    });
   SwaggerModule.setup('/docs', app, documentFactory, swaggerUiOptions);
   // endregion
 
