@@ -7,6 +7,7 @@ import { User } from '../entities/user.entity';
 import { CreateConversationDto } from './dtos/createConversation.dto';
 import { ConversationMessage } from '../entities/conversationMessage.entity';
 import { SendMessageDto } from './dtos/sendMessage.dto';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @Injectable()
 export class ConversationService {
@@ -18,6 +19,7 @@ export class ConversationService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(ConversationMessage)
     private readonly conversationMessageRepository: Repository<ConversationMessage>,
+    private readonly notificationGateway: NotificationsGateway,
   ) {}
 
   async sendMessage(
@@ -121,8 +123,10 @@ export class ConversationService {
   }
 
   async createConversation(
+    userId: string,
     payload: CreateConversationDto,
   ): Promise<Conversation> {
+    payload.participantIds.push(userId); // Ensure the creator is included as a participant
     const participants = await this.userRepository.find({
       where: { id: In(payload.participantIds) },
     });
@@ -140,9 +144,14 @@ export class ConversationService {
       this.userToConversationRepository.create({
         user,
         conversation,
+        lastReadAt: new Date(),
       }),
     );
     await this.userToConversationRepository.save(userToConversations);
+
+    // Notify participants of the new conversation
+    const recipientIds = participants.map((p) => p.id);
+    this.notificationGateway.notifyNewConversation(recipientIds, conversation);
 
     return conversation;
   }

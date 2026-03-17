@@ -31,8 +31,12 @@ export class ConversationController {
   }
 
   @Post()
-  async createConversation(@Body() payload: CreateConversationDto) {
-    return await this.conversationService.createConversation(payload);
+  async createConversation(
+    @Body() payload: CreateConversationDto,
+    @Req() req: Request,
+  ) {
+    const userId = req['user'] as string;
+    return await this.conversationService.createConversation(userId, payload);
   }
 
   @Post(':conversationId/message')

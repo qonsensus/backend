@@ -6,6 +6,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
 import { IncomingFriendRequestWsDto } from './dtos/incomingFriendRequest.ws.dto';
+import { Conversation } from '../entities/conversation.entity';
 
 @WebSocketGateway({
   cors: {
@@ -38,5 +39,12 @@ export class NotificationsGateway implements OnGatewayConnection {
   ) {
     const room = `user:${recipientId}`;
     this.server.to(room).emit('friendRequest', payload);
+  }
+
+  notifyNewConversation(recipientIds: string[], payload: Conversation) {
+    recipientIds.forEach((recipientId) => {
+      const room = `user:${recipientId}`;
+      this.server.to(room).emit('newConversation', payload);
+    });
   }
 }

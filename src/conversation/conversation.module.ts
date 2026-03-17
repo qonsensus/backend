@@ -6,6 +6,7 @@ import { UserToConversation } from '../entities/userToConversation.entity';
 import { User } from '../entities/user.entity';
 import { ConversationMessage } from '../entities/conversationMessage.entity';
 import { ConversationController } from './conversation.controller';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ConversationController } from './conversation.controller';
       User,
       ConversationMessage,
     ]),
+    NotificationsModule,
   ],
   providers: [ConversationService],
   controllers: [ConversationController],
