@@ -18,6 +18,7 @@ import { Friendship } from './entities/friendship.entity';
 import { FriendsModule } from './friends/friends.module';
 import { ProfileModule } from './profile/profile.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ConversationModule } from './conversation/conversation.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     FriendsModule,
     ProfileModule,
     NotificationsModule,
+    ConversationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

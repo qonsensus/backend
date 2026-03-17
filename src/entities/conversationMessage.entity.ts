@@ -1,4 +1,5 @@
 import {
+  Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
@@ -15,6 +16,9 @@ export class ConversationMessage {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column()
+  content: string;
 
   @ManyToOne(() => Conversation, (conversation) => conversation.messages, {
     onDelete: 'CASCADE',
