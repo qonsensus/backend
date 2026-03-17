@@ -20,7 +20,13 @@ export class NotificationsGateway implements OnGatewayConnection {
 
   async handleConnection(client: Socket) {
     const authToken = client.handshake.auth.token as string;
-    const user = await this.authService.validateToken(authToken);
+    const user = await this.authService
+      .validateToken(authToken)
+      .catch(() => null);
+    if (!user) {
+      client.disconnect();
+      return;
+    }
 
     const room = `user:${user.id}`;
     await client.join(room);

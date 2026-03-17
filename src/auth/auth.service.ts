@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
@@ -20,7 +21,11 @@ export class AuthService {
   ) {}
 
   async validateToken(token: string): Promise<User> {
-    const payload = this.jwtService.verify<JwtPayload>(token);
+    const payload = await this.jwtService
+      .verifyAsync<JwtPayload>(token)
+      .catch((err) => {
+        throw new UnauthorizedException(err);
+      });
     if (payload.type !== JwtTokenType.ACCESS) {
       throw new BadRequestException('Invalid token type');
     }
@@ -62,7 +67,11 @@ export class AuthService {
    * @throws NotFoundException if the user associated with the token is not found.
    */
   async refreshToken(refreshToken: string): Promise<TokenPair> {
-    const payload = this.jwtService.verify<JwtPayload>(refreshToken);
+    const payload = await this.jwtService
+      .verifyAsync<JwtPayload>(refreshToken)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
     if (payload.type !== JwtTokenType.REFRESH) {
       throw new BadRequestException('Invalid token type');
     }
