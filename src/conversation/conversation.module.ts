@@ -5,6 +5,7 @@ import { Conversation } from '../entities/conversation.entity';
 import { UserToConversation } from '../entities/userToConversation.entity';
 import { User } from '../entities/user.entity';
 import { ConversationMessage } from '../entities/conversationMessage.entity';
+import { ConversationController } from './conversation.controller';
 
 @Module({
   imports: [
@@ -16,5 +17,6 @@ import { ConversationMessage } from '../entities/conversationMessage.entity';
     ]),
   ],
   providers: [ConversationService],
+  controllers: [ConversationController],
 })
 export class ConversationModule {}
