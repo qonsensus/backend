@@ -29,7 +29,7 @@ import { ConversationModule } from './conversation/conversation.module';
       username: 'user',
       password: 'secret',
       database: 'qonsensus',
-      logging: true,
+      logging: false,
       entities: [
         User,
         Profile,

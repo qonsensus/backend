@@ -14,7 +14,7 @@ export class ConversationService {
     @InjectRepository(Conversation)
     private readonly conversationRepository: Repository<Conversation>,
     @InjectRepository(UserToConversation)
-    private readonly userToConversation: Repository<UserToConversation>,
+    private readonly userToConversationRepository: Repository<UserToConversation>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(ConversationMessage)
     private readonly conversationMessageRepository: Repository<ConversationMessage>,
@@ -26,7 +26,7 @@ export class ConversationService {
     payload: SendMessageDto,
   ): Promise<ConversationMessage> {
     // Verify user is part of the conversation
-    const userToConversation = await this.userToConversation.findOne({
+    const userToConversation = await this.userToConversationRepository.findOne({
       where: {
         user: { id: userId },
         conversation: { id: conversationId },
@@ -51,7 +51,7 @@ export class ConversationService {
     conversationId: string,
   ): Promise<ConversationMessage[]> {
     // get the UserToConversation entry to ensure the user has access to the conversation
-    const userToConversation = await this.userToConversation.findOne({
+    const userToConversation = await this.userToConversationRepository.findOne({
       where: {
         user: { id: userId },
         conversation: { id: conversationId },
@@ -83,16 +83,24 @@ export class ConversationService {
 
     // Update lastReadAt to now
     userToConversation.lastReadAt = new Date();
-    await this.userToConversation.save(userToConversation);
+    await this.userToConversationRepository.save(userToConversation);
 
     // Return combined messages, with new messages first
     return [...oldMessages, ...newMessages];
   }
 
   async getAllConversationsForUser(userId: string): Promise<Conversation[]> {
-    const userToConversations = await this.userToConversation.find({
+    const userToConversations = await this.userToConversationRepository.find({
       where: { user: { id: userId } },
-      relations: ['conversation', 'participants', 'participants.profile'],
+      relations: {
+        conversation: {
+          participants: {
+            user: {
+              profile: true,
+            },
+          },
+        },
+      },
     });
     return userToConversations.map((utc) => {
       const conversation = utc.conversation;
@@ -129,12 +137,12 @@ export class ConversationService {
 
     // Create UserToConversation entries for each participant
     const userToConversations = participants.map((user) =>
-      this.userToConversation.create({
+      this.userToConversationRepository.create({
         user,
         conversation,
       }),
     );
-    await this.userToConversation.save(userToConversations);
+    await this.userToConversationRepository.save(userToConversations);
 
     return conversation;
   }
