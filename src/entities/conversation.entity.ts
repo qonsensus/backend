@@ -1,5 +1,4 @@
 import {
-  Column,
   CreateDateColumn,
   Entity,
   OneToMany,
@@ -19,9 +18,6 @@ export class Conversation {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @Column()
-  name: string;
 
   @OneToMany(
     () => UserToConversation,

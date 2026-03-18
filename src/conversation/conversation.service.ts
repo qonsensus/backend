@@ -8,6 +8,7 @@ import { CreateConversationDto } from './dtos/createConversation.dto';
 import { ConversationMessage } from '../entities/conversationMessage.entity';
 import { SendMessageDto } from './dtos/sendMessage.dto';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { ConversationDto } from './dtos/conversation.dto';
 
 @Injectable()
 export class ConversationService {
@@ -91,7 +92,7 @@ export class ConversationService {
     return [...oldMessages, ...newMessages];
   }
 
-  async getAllConversationsForUser(userId: string): Promise<Conversation[]> {
+  async getAllConversationsForUser(userId: string): Promise<ConversationDto[]> {
     const userToConversations = await this.userToConversationRepository.find({
       where: { user: { id: userId } },
       relations: {
@@ -105,38 +106,36 @@ export class ConversationService {
       },
     });
     return userToConversations.map((utc) => {
-      const conversation = utc.conversation;
-      if (conversation.participants.length > 2) {
-        // Group conversation - return as is
-        return conversation;
-      } else {
-        // Direct message - set name to the other participant's display name
-        const otherParticipant = conversation.participants.find(
-          (p) => p.user.id !== userId,
-        );
-        if (otherParticipant) {
-          conversation.name = otherParticipant.user.profile.displayName;
-        }
-        return conversation;
-      }
+      const participants = utc.conversation.participants.map(
+        (p) => p.user.profile,
+      );
+      // exclude the current user from the participants list
+      const otherParticipants = participants.filter(
+        (p) => p.ownerId !== userId,
+      );
+      return {
+        id: utc.conversation.id,
+        participants: otherParticipants,
+      };
     });
   }
 
   async createConversation(
     userId: string,
     payload: CreateConversationDto,
-  ): Promise<Conversation> {
+  ): Promise<ConversationDto> {
     payload.participantIds.push(userId); // Ensure the creator is included as a participant
     const participants = await this.userRepository.find({
       where: { id: In(payload.participantIds) },
+      relations: {
+        profile: true,
+      },
     });
     if (!participants || participants.length !== payload.participantIds.length)
       throw new NotFoundException('One or more participants not found');
 
     // Create the conversation
-    const conversation = this.conversationRepository.create({
-      name: payload.name,
-    });
+    const conversation = this.conversationRepository.create({});
     await this.conversationRepository.save(conversation);
 
     // Create UserToConversation entries for each participant
@@ -149,10 +148,19 @@ export class ConversationService {
     );
     await this.userToConversationRepository.save(userToConversations);
 
+    // Cast to ConversationDto for notification
+    const conversationDto: ConversationDto = {
+      id: conversation.id,
+      participants: participants.map((p) => p.profile),
+    };
+
     // Notify participants of the new conversation
     const recipientIds = participants.map((p) => p.id);
-    this.notificationGateway.notifyNewConversation(recipientIds, conversation);
+    this.notificationGateway.notifyNewConversation(
+      recipientIds,
+      conversationDto,
+    );
 
-    return conversation;
+    return conversationDto;
   }
 }

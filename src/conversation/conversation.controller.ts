@@ -4,7 +4,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SendMessageDto } from './dtos/sendMessage.dto';
 import type { Request } from 'express';
 import { CreateConversationDto } from './dtos/createConversation.dto';
-import { Conversation } from '../entities/conversation.entity';
+import { ConversationDto } from './dtos/conversation.dto';
 
 @Controller('conversation')
 @ApiBearerAuth()
@@ -13,7 +13,7 @@ export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
 
   @Get()
-  async getConversation(@Req() req: Request): Promise<Conversation[]> {
+  async getConversation(@Req() req: Request): Promise<ConversationDto[]> {
     const userId = req['user'] as string;
     return await this.conversationService.getAllConversationsForUser(userId);
   }
