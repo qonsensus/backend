@@ -22,9 +22,14 @@ export class Conversation {
   @OneToMany(
     () => UserToConversation,
     (userToConversation) => userToConversation.conversation,
+    {
+      cascade: ['remove'],
+    },
   )
   participants: UserToConversation[];
 
-  @OneToMany(() => ConversationMessage, (message) => message.conversation)
+  @OneToMany(() => ConversationMessage, (message) => message.conversation, {
+    cascade: ['remove'],
+  })
   messages: ConversationMessage[];
 }
