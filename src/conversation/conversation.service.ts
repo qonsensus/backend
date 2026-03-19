@@ -9,6 +9,7 @@ import { ConversationMessage } from '../entities/conversationMessage.entity';
 import { SendMessageDto } from './dtos/sendMessage.dto';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { ConversationDto } from './dtos/conversation.dto';
+import { createHash } from 'node:crypto';
 
 @Injectable()
 export class ConversationService {
@@ -124,6 +125,7 @@ export class ConversationService {
     userId: string,
     payload: CreateConversationDto,
   ): Promise<ConversationDto> {
+    // ensure the creator is included in the participant list
     payload.participantIds.push(userId); // Ensure the creator is included as a participant
     const participants = await this.userRepository.find({
       where: { id: In(payload.participantIds) },
@@ -134,8 +136,32 @@ export class ConversationService {
     if (!participants || participants.length !== payload.participantIds.length)
       throw new NotFoundException('One or more participants not found');
 
+    // Generate a hash of the participant IDs to check for existing conversations
+    const hash = this.generateParticipantsHash(payload.participantIds);
+    const existingConversation = await this.conversationRepository.findOne({
+      where: { participantsHash: hash },
+      relations: {
+        participants: {
+          user: {
+            profile: true,
+          },
+        },
+      },
+    });
+    if (existingConversation) {
+      // If a conversation with the same participants exists, return it
+      return {
+        id: existingConversation.id,
+        participants: existingConversation.participants.map(
+          (p) => p.user.profile,
+        ),
+      };
+    }
+
     // Create the conversation
-    const conversation = this.conversationRepository.create({});
+    const conversation = this.conversationRepository.create({
+      participantsHash: participants.length == 2 ? hash : undefined,
+    });
     await this.conversationRepository.save(conversation);
 
     // Create UserToConversation entries for each participant
@@ -162,5 +188,10 @@ export class ConversationService {
     );
 
     return conversationDto;
+  }
+
+  private generateParticipantsHash(participantIds: string[]): string {
+    const sortedIds = participantIds.sort();
+    return createHash('sha256').update(sortedIds.join(':')).digest('hex');
   }
 }
