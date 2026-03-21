@@ -7,9 +7,16 @@ import {
   SwaggerModule,
 } from '@nestjs/swagger';
 import { IncomingFriendRequestWsDto } from './notifications/dtos/incomingFriendRequest.ws.dto';
+import { DataSource } from 'typeorm';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const dataSource = app.get(DataSource);
+  if (!dataSource.isInitialized) {
+    await dataSource.initialize();
+  }
+  await dataSource.runMigrations();
 
   // region Swagger setup
   const swaggerConfig = new DocumentBuilder()
