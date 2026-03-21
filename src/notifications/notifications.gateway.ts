@@ -7,6 +7,7 @@ import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
 import { IncomingFriendRequestWsDto } from './dtos/incomingFriendRequest.ws.dto';
 import { ConversationDto } from '../conversation/dtos/conversation.dto';
+import { ConversationMessageDto } from '../conversation/dtos/conversationMessage.dto';
 
 @WebSocketGateway({
   cors: {
@@ -53,6 +54,13 @@ export class NotificationsGateway implements OnGatewayConnection {
         participants: filteredParticipants,
       };
       this.server.to(room).emit('newConversation', modifiedPayload);
+    });
+  }
+
+  notifyNewMessage(recipientIds: string[], payload: ConversationMessageDto) {
+    recipientIds.forEach((recipientId) => {
+      const room = `user:${recipientId}`;
+      this.server.to(room).emit('newMessage', payload);
     });
   }
 }

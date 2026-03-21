@@ -53,7 +53,8 @@ export class ConversationService {
     message.author = author;
     await this.conversationMessageRepository.save(message);
 
-    return {
+    // Cast to ConversationMessageDto for notification
+    const messageDto: ConversationMessageDto = {
       id: message.id,
       content: message.content,
       conversationId: message.conversationId,
@@ -63,6 +64,20 @@ export class ConversationService {
       createdAt: message.createdAt,
       authorAvatarUrl: author.profile.avatarUrl,
     };
+
+    // get all participants in the conversation to notify them of the new message
+    const participants = await this.userToConversationRepository.find({
+      where: {
+        conversationId,
+      },
+      relations: {
+        user: true,
+      },
+    });
+    const recipientIds = participants.map((p) => p.user.id);
+    this.notificationGateway.notifyNewMessage(recipientIds, messageDto);
+
+    return messageDto;
   }
 
   async getConversationMessages(
