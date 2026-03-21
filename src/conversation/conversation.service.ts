@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Conversation } from '../entities/conversation.entity';
-import { In, LessThan, MoreThan, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { UserToConversation } from '../entities/userToConversation.entity';
 import { User } from '../entities/user.entity';
 import { CreateConversationDto } from './dtos/createConversation.dto';
@@ -32,8 +32,8 @@ export class ConversationService {
     // Verify user is part of the conversation
     const userToConversation = await this.userToConversationRepository.findOne({
       where: {
-        user: { id: userId },
-        conversation: { id: conversationId },
+        userId: userId,
+        conversationId,
       },
     });
     if (!userToConversation) {
@@ -43,7 +43,7 @@ export class ConversationService {
     // Create and save the message
     const message = this.conversationMessageRepository.create();
     message.content = payload.message;
-    message.conversation = userToConversation.conversation;
+    message.conversationId = conversationId;
     const author = await this.userRepository.findOne({ where: { id: userId } });
     if (!author) throw new NotFoundException('Author not found');
     message.author = author;
@@ -57,8 +57,8 @@ export class ConversationService {
     // get the UserToConversation entry to ensure the user has access to the conversation
     const userToConversation = await this.userToConversationRepository.findOne({
       where: {
-        user: { id: userId },
-        conversation: { id: conversationId },
+        userId: userId,
+        conversationId,
       },
     });
     if (!userToConversation) {
@@ -66,24 +66,27 @@ export class ConversationService {
     }
 
     // Load all conversation messages newer than lastReadAt
-    const lastReadAt = userToConversation.lastReadAt;
-    const newMessages = await this.conversationMessageRepository.find({
-      where: {
-        createdAt: MoreThan(lastReadAt || new Date()),
-        conversation: { id: conversationId },
-      },
-      order: { createdAt: 'ASC' },
-    });
+    const lastReadAt = new Date(userToConversation.lastReadAt);
+
+    const newMessages = await this.conversationMessageRepository
+      .createQueryBuilder('msg')
+      .where('msg.conversationId = :conversationId', { conversationId })
+      .andWhere('msg.createdAt > :lastReadAt', {
+        lastReadAt: lastReadAt.toISOString(),
+      })
+      .orderBy('msg.createdAt', 'ASC')
+      .getMany();
 
     // Load 30 messages before the lastReadAt for context
-    const oldMessages = await this.conversationMessageRepository.find({
-      where: {
-        createdAt: LessThan(lastReadAt || new Date()),
-        conversation: { id: conversationId },
-      },
-      order: { createdAt: 'ASC' },
-      take: 30,
-    });
+    const oldMessages = await this.conversationMessageRepository
+      .createQueryBuilder('msg')
+      .where('msg.conversationId = :conversationId', { conversationId })
+      .andWhere('msg.createdAt <= :lastReadAt', {
+        lastReadAt: lastReadAt.toISOString(),
+      })
+      .orderBy('msg.createdAt', 'DESC')
+      .take(30)
+      .getMany();
 
     // Update lastReadAt to now
     userToConversation.lastReadAt = new Date();
@@ -169,7 +172,7 @@ export class ConversationService {
       this.userToConversationRepository.create({
         user,
         conversation,
-        lastReadAt: new Date(),
+        lastReadAt: new Date(0),
       }),
     );
     await this.userToConversationRepository.save(userToConversations);

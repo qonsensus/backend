@@ -16,7 +16,7 @@ export class UserToConversation {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column()
+  @Column({ type: 'timestamptz' })
   lastReadAt: Date;
 
   @Column()

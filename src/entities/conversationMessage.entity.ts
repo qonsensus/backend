@@ -20,6 +20,9 @@ export class ConversationMessage {
   @Column()
   content: string;
 
+  @Column({ nullable: true })
+  conversationId: string;
+
   @ManyToOne(() => Conversation, (conversation) => conversation.messages, {
     onDelete: 'CASCADE',
   })
