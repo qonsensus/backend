@@ -5,6 +5,7 @@ import { SendMessageDto } from './dtos/sendMessage.dto';
 import type { Request } from 'express';
 import { CreateConversationDto } from './dtos/createConversation.dto';
 import { ConversationDto } from './dtos/conversation.dto';
+import { ConversationMessageDto } from './dtos/conversationMessage.dto';
 
 @Controller('conversation')
 @ApiBearerAuth()
@@ -22,7 +23,7 @@ export class ConversationController {
   async getConversationMessages(
     @Param('conversationId') conversationId: string,
     @Req() req: Request,
-  ) {
+  ): Promise<ConversationMessageDto[]> {
     const userId = req['user'] as string;
     return await this.conversationService.getConversationMessages(
       userId,
@@ -34,7 +35,7 @@ export class ConversationController {
   async createConversation(
     @Body() payload: CreateConversationDto,
     @Req() req: Request,
-  ) {
+  ): Promise<ConversationDto> {
     const userId = req['user'] as string;
     return await this.conversationService.createConversation(userId, payload);
   }
@@ -44,7 +45,7 @@ export class ConversationController {
     @Param('conversationId') conversationId: string,
     @Req() req: Request,
     @Body() payload: SendMessageDto,
-  ) {
+  ): Promise<ConversationMessageDto> {
     const userId = req['user'] as string;
     return await this.conversationService.sendMessage(
       conversationId,

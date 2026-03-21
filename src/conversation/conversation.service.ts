@@ -10,6 +10,7 @@ import { SendMessageDto } from './dtos/sendMessage.dto';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { ConversationDto } from './dtos/conversation.dto';
 import { createHash } from 'node:crypto';
+import { ConversationMessageDto } from './dtos/conversationMessage.dto';
 
 @Injectable()
 export class ConversationService {
@@ -28,7 +29,7 @@ export class ConversationService {
     conversationId: string,
     userId: string,
     payload: SendMessageDto,
-  ): Promise<ConversationMessage> {
+  ): Promise<ConversationMessageDto> {
     // Verify user is part of the conversation
     const userToConversation = await this.userToConversationRepository.findOne({
       where: {
@@ -50,13 +51,24 @@ export class ConversationService {
     });
     if (!author) throw new NotFoundException('Author not found');
     message.author = author;
-    return await this.conversationMessageRepository.save(message);
+    await this.conversationMessageRepository.save(message);
+
+    return {
+      id: message.id,
+      content: message.content,
+      conversationId: message.conversationId,
+      authorId: author.id,
+      authorProfileId: author.profile.id,
+      authorName: author.profile.displayName,
+      createdAt: message.createdAt,
+      authorAvatarUrl: author.profile.avatarUrl,
+    };
   }
 
   async getConversationMessages(
     userId: string,
     conversationId: string,
-  ): Promise<ConversationMessage[]> {
+  ): Promise<ConversationMessageDto[]> {
     // get the UserToConversation entry to ensure the user has access to the conversation
     const userToConversation = await this.userToConversationRepository.findOne({
       where: {
@@ -91,7 +103,7 @@ export class ConversationService {
       relations: {
         author: { profile: true },
       },
-      take: 30,
+      take: 50,
     });
 
     // Update lastReadAt to now
@@ -99,7 +111,17 @@ export class ConversationService {
     await this.userToConversationRepository.save(userToConversation);
 
     // Return combined messages, with new messages first
-    return [...oldMessages.reverse(), ...newMessages];
+    const fullMessageList = [...oldMessages.reverse(), ...newMessages];
+    return fullMessageList.map((message) => ({
+      id: message.id,
+      content: message.content,
+      conversationId: message.conversationId,
+      authorId: message.author.id,
+      authorProfileId: message.author.profile.id,
+      authorName: message.author.profile.displayName,
+      createdAt: message.createdAt,
+      authorAvatarUrl: message.author.profile.avatarUrl,
+    }));
   }
 
   async getAllConversationsForUser(userId: string): Promise<ConversationDto[]> {
