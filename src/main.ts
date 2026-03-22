@@ -36,8 +36,16 @@ async function bootstrap() {
   SwaggerModule.setup('/docs', app, documentFactory, swaggerUiOptions);
   // endregion
 
+  function getAllowedOrigins() {
+    const allowedOriginsEnv = process.env.CORS_ALLOWED_ORIGINS;
+    if (allowedOriginsEnv) {
+      return allowedOriginsEnv.split(',').map((origin) => origin.trim());
+    }
+    return ['http://localhost:3001'];
+  }
+
   app.enableCors({
-    origin: ['http://localhost:3001'],
+    origin: getAllowedOrigins(),
   });
 
   await app.listen(process.env.PORT ?? 3000);
