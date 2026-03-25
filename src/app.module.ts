@@ -8,6 +8,7 @@ import { ProfileModule } from './profile/profile.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ConversationModule } from './conversation/conversation.module';
 import { dataSourceOptions } from './database/data-source';
+import { MediasoupModule } from './mediasoup/mediasoup.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { dataSourceOptions } from './database/data-source';
     ProfileModule,
     NotificationsModule,
     ConversationModule,
+    MediasoupModule,
   ],
   controllers: [AppController],
 })
