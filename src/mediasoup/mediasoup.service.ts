@@ -48,8 +48,6 @@ export class MediasoupService implements OnModuleInit {
 
     for (let i = 0; i < numWorkers; i++) {
       const worker = await mediasoup.createWorker({
-        rtcMinPort: 40000,
-        rtcMaxPort: 49999,
         logLevel: 'warn',
         logTags: ['rtp', 'srtp', 'rtcp'],
       });

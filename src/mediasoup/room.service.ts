@@ -100,7 +100,20 @@ export class RoomService {
     const announcedIp = await this.resolveAnnouncedIp();
 
     const transport = await room.router.createWebRtcTransport({
-      listenIps: [{ ip: '0.0.0.0', announcedIp }],
+      listenInfos: [
+        {
+          protocol: 'udp',
+          ip: '0.0.0.0',
+          announcedAddress: announcedIp,
+          portRange: { min: 40000, max: 49999 },
+        },
+        {
+          protocol: 'tcp',
+          ip: '0.0.0.0',
+          announcedAddress: announcedIp,
+          portRange: { min: 40000, max: 49999 },
+        },
+      ],
       enableUdp: true,
       enableTcp: true,
       preferUdp: true,
