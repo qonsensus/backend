@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Router, RtpCodecCapability, Worker } from 'mediasoup/types';
+import { Router, RouterRtpCodecCapability, Worker } from 'mediasoup/types';
 import * as mediasoup from 'mediasoup';
 
 @Injectable()
@@ -9,25 +9,27 @@ export class MediasoupService implements OnModuleInit {
   private workers: Worker[] = [];
   private workerIndex = 0;
 
-  private readonly mediaCodecs: RtpCodecCapability[] = [
+  private readonly mediaCodecs: RouterRtpCodecCapability[] = [
     {
       kind: 'audio',
       mimeType: 'audio/opus',
       clockRate: 48000,
       channels: 2,
-      preferredPayloadType: 96,
     },
     {
       kind: 'video',
       mimeType: 'video/VP8',
       clockRate: 90000,
-      preferredPayloadType: 100,
+    },
+    {
+      kind: 'video',
+      mimeType: 'video/VP9',
+      clockRate: 90000,
     },
     {
       kind: 'video',
       mimeType: 'video/H264',
       clockRate: 90000,
-      preferredPayloadType: 101,
       parameters: {
         'packetization-mode': 1,
         'profile-level-id': '42e01f',

@@ -47,6 +47,11 @@ interface ResumeConsumerPayload {
   consumerId: string;
 }
 
+interface CloseProducerPayload {
+  roomId: string;
+  producerId: string;
+}
+
 @WebSocketGateway({
   cors: { origin: '*' }, // Lock this down in production
   namespace: '/mediasoup',
@@ -209,6 +214,33 @@ export class MediasoupGateway implements OnGatewayDisconnect {
 
       await this.roomService.resumeConsumer(peer, consumerId);
       return { resumed: true };
+    } catch (err) {
+      throw new WsException((err as Error).message);
+    }
+  }
+
+  // ── Step 7: Client stops sending a specific stream (e.g. ends webcam) ──────
+  @SubscribeMessage('closeProducer')
+  handleCloseProducer(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() { roomId, producerId }: CloseProducerPayload,
+  ) {
+    try {
+      const room = this.roomService.getRoom(roomId);
+      if (!room) throw new Error(`Room ${roomId} not found`);
+
+      const peer = this.roomService.getPeer(room, socket.id);
+      if (!peer) throw new Error(`Peer not found`);
+
+      this.roomService.closeProducer(peer, producerId);
+
+      // Tell every other peer to remove the video/audio element for this producer
+      socket.to(roomId).emit('producerClosed', {
+        producerId,
+        socketId: socket.id,
+      });
+
+      return { closed: true };
     } catch (err) {
       throw new WsException((err as Error).message);
     }

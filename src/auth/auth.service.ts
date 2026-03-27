@@ -92,7 +92,7 @@ export class AuthService {
     sub: string,
   ): Promise<{ token: string; expiresAt: number }> {
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1); // Token expires in 1 hour
+    expiresAt.setHours(expiresAt.getHours() + 12); // Token expires in 1 hour
     const exp = Math.floor(expiresAt.getTime() / 1000);
     const payload: JwtPayload = {
       sub,

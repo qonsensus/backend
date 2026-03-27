@@ -230,6 +230,17 @@ export class RoomService {
     await consumer.resume();
   }
 
+  // ── Producer management (close) ──────────────────────────────────────────
+
+  closeProducer(peer: Peer, producerId: string): void {
+    const producer = peer.producers.get(producerId);
+    if (!producer) throw new Error(`Producer ${producerId} not found`);
+
+    producer.close();
+    peer.producers.delete(producerId);
+    this.logger.log(`Producer ${producerId} closed by peer "${peer.socketId}"`);
+  }
+
   // ── Cleanup ───────────────────────────────────────────────────────────────
 
   removePeer(roomId: string, socketId: string): void {
