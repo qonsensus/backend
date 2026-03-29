@@ -6,6 +6,7 @@ import {
   RtpParameters,
   RtpCapabilities,
   MediaKind,
+  Producer,
 } from 'mediasoup/types';
 import { MediasoupService } from './mediasoup.service';
 import { Room } from './interfaces/room.interface';
@@ -157,11 +158,12 @@ export class RoomService {
     transportId: string,
     kind: MediaKind,
     rtpParameters: RtpParameters,
+    appData: Record<string, any>,
   ): Promise<string> {
     const transport = peer.transports.get(transportId);
     if (!transport) throw new Error(`Transport ${transportId} not found`);
 
-    const producer = await transport.produce({ kind, rtpParameters });
+    const producer = await transport.produce({ kind, rtpParameters, appData });
 
     producer.on('transportclose', () => {
       this.logger.log(`Producer ${producer.id} transport closed`);
@@ -176,6 +178,16 @@ export class RoomService {
 
   // ── Consumer management ───────────────────────────────────────────────────
 
+  getProducerById(room: Room, producerId: string): Producer | null {
+    for (const peer of room.peers.values()) {
+      const producer = peer.producers.get(producerId);
+      if (producer) {
+        return producer;
+      }
+    }
+    return null;
+  }
+
   async createConsumer(
     room: Room,
     consumerPeer: Peer,
@@ -187,6 +199,7 @@ export class RoomService {
     producerId: string;
     kind: MediaKind;
     rtpParameters: RtpParameters;
+    appData?: Record<string, any>;
   }> {
     // Guard: can the consumer's browser decode this producer's codec?
     if (!room.router.canConsume({ producerId, rtpCapabilities })) {
@@ -196,11 +209,15 @@ export class RoomService {
     const transport = consumerPeer.transports.get(transportId);
     if (!transport) throw new Error(`Transport ${transportId} not found`);
 
+    const producer = this.getProducerById(room, producerId);
+    if (!producer) throw new Error(`Producer ${producerId} not found`);
+
     // Start paused — the client will call resumeConsumer when its <video> is ready
     const consumer = await transport.consume({
       producerId,
       rtpCapabilities,
       paused: true,
+      appData: producer.appData,
     });
 
     consumer.on('transportclose', () => {
@@ -221,6 +238,7 @@ export class RoomService {
       producerId,
       kind: consumer.kind,
       rtpParameters: consumer.rtpParameters,
+      appData: consumer.appData,
     };
   }
 

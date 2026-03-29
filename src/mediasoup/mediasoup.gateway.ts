@@ -33,6 +33,7 @@ interface ProducePayload {
   transportId: string;
   kind: MediaKind;
   rtpParameters: RtpParameters;
+  appData: Record<string, any>;
 }
 
 interface ConsumePayload {
@@ -144,7 +145,8 @@ export class MediasoupGateway implements OnGatewayDisconnect {
   @SubscribeMessage('produce')
   async handleProduce(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() { roomId, transportId, kind, rtpParameters }: ProducePayload,
+    @MessageBody()
+    { roomId, transportId, kind, rtpParameters, appData }: ProducePayload,
   ) {
     try {
       const room = this.roomService.getRoom(roomId);
@@ -158,6 +160,7 @@ export class MediasoupGateway implements OnGatewayDisconnect {
         transportId,
         kind,
         rtpParameters,
+        appData,
       );
 
       // Notify every OTHER peer in the room that a new stream is available
