@@ -4,16 +4,16 @@ import { Chat } from '../entities/chat.entity';
 import { In, LessThanOrEqual, MoreThan, Repository } from 'typeorm';
 import { UserToChat } from '../entities/userToChat.entity';
 import { User } from '../entities/user.entity';
-import { CreateConversationDto } from './dtos/createConversation.dto';
+import { CreateChatDto } from './dtos/createChat.dto';
 import { ChatMessage } from '../entities/chatMessage.entity';
 import { SendMessageDto } from './dtos/sendMessage.dto';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
-import { ConversationDto } from './dtos/conversation.dto';
+import { ChatDto } from './dtos/chat.dto';
 import { createHash } from 'node:crypto';
-import { ConversationMessageDto } from './dtos/conversationMessage.dto';
+import { ChatMessageDto } from './dtos/chatMessage.dto';
 
 @Injectable()
-export class ConversationService {
+export class ChatService {
   constructor(
     @InjectRepository(Chat)
     private readonly conversationRepository: Repository<Chat>,
@@ -29,7 +29,7 @@ export class ConversationService {
     conversationId: string,
     userId: string,
     payload: SendMessageDto,
-  ): Promise<ConversationMessageDto> {
+  ): Promise<ChatMessageDto> {
     // Verify user is part of the conversation
     const userToConversation = await this.userToConversationRepository.findOne({
       where: {
@@ -54,7 +54,7 @@ export class ConversationService {
     await this.conversationMessageRepository.save(message);
 
     // Cast to ConversationMessageDto for notification
-    const messageDto: ConversationMessageDto = {
+    const messageDto: ChatMessageDto = {
       id: message.id,
       content: message.content,
       conversationId: message.conversationId,
@@ -83,7 +83,7 @@ export class ConversationService {
   async getConversationMessages(
     userId: string,
     conversationId: string,
-  ): Promise<ConversationMessageDto[]> {
+  ): Promise<ChatMessageDto[]> {
     // get the UserToConversation entry to ensure the user has access to the conversation
     const userToConversation = await this.userToConversationRepository.findOne({
       where: {
@@ -139,7 +139,7 @@ export class ConversationService {
     }));
   }
 
-  async getAllConversationsForUser(userId: string): Promise<ConversationDto[]> {
+  async getAllConversationsForUser(userId: string): Promise<ChatDto[]> {
     const userToConversations = await this.userToConversationRepository.find({
       where: { user: { id: userId } },
       relations: {
@@ -167,8 +167,8 @@ export class ConversationService {
 
   async createConversation(
     userId: string,
-    payload: CreateConversationDto,
-  ): Promise<ConversationDto> {
+    payload: CreateChatDto,
+  ): Promise<ChatDto> {
     // ensure the creator is included in the participant list
     payload.participantIds.push(userId); // Ensure the creator is included as a participant
     const participants = await this.userRepository.find({
@@ -219,7 +219,7 @@ export class ConversationService {
     await this.userToConversationRepository.save(userToConversations);
 
     // Cast to ConversationDto for notification
-    const conversationDto: ConversationDto = {
+    const conversationDto: ChatDto = {
       id: conversation.id,
       participants: participants.map((p) => p.profile),
     };
