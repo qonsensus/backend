@@ -135,6 +135,27 @@ export class ChatService {
     await this.userToChatRepository.save(userToChat);
   }
 
+  async getLatestMessageForChat(
+    chatId: string,
+  ): Promise<ChatMessageDto | null> {
+    const message = await this.chatMessageRepository.findOne({
+      where: { chatId },
+      relations: { author: { profile: true } },
+      order: { createdAt: 'DESC' },
+    });
+    if (!message) return null;
+    return {
+      id: message.id,
+      content: message.content,
+      conversationId: message.chatId,
+      authorId: message.author.id,
+      authorProfileId: message.author.profile.id,
+      authorName: message.author.profile.displayName,
+      createdAt: message.createdAt,
+      authorAvatarUrl: message.author.profile.avatarUrl,
+    };
+  }
+
   async getAllConversationsForUser(userId: string): Promise<ChatDto[]> {
     const userToConversations = await this.userToChatRepository.find({
       where: { user: { id: userId } },
@@ -145,6 +166,7 @@ export class ChatService {
               profile: true,
             },
           },
+          messages: true,
         },
       },
     });
@@ -154,9 +176,19 @@ export class ChatService {
       const otherParticipants = participants.filter(
         (p) => p.ownerId !== userId,
       );
+      const latestMessage = utc.chat.messages.reduce(
+        (latest: ChatMessage, message) => {
+          return !latest || message.createdAt > latest.createdAt
+            ? message
+            : latest;
+        },
+        null,
+      );
       return {
         id: utc.chat.id,
         participants: otherParticipants,
+        latestMessageContent: latestMessage ? latestMessage.content : null,
+        latestMessageCreatedAt: latestMessage ? latestMessage.createdAt : null,
       };
     });
   }
@@ -186,12 +218,17 @@ export class ChatService {
       },
     });
     if (existingConversation) {
+      const latestMessage = await this.getLatestMessageForChat(
+        existingConversation.id,
+      );
       // If a conversation with the same participants exists, return it
       return {
         id: existingConversation.id,
         participants: existingConversation.participants.map(
           (p) => p.user.profile,
         ),
+        latestMessageContent: latestMessage ? latestMessage.content : null,
+        latestMessageCreatedAt: latestMessage ? latestMessage.createdAt : null,
       };
     }
 
@@ -215,6 +252,8 @@ export class ChatService {
     const chatDto: ChatDto = {
       id: conversation.id,
       participants: participants.map((p) => p.profile),
+      latestMessageContent: null,
+      latestMessageCreatedAt: null,
     };
 
     // Notify participants of the new conversation

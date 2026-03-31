@@ -12,12 +12,18 @@ import { ChatMessageDto } from './dtos/chatMessage.dto';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  /**
+   * Get all chats the authenticated user is part of, along with the latest message in each chat.
+   */
   @Get()
   async getMyChats(@Req() req: Request): Promise<ChatDto[]> {
     const userId = req['user'] as string;
     return await this.chatService.getAllConversationsForUser(userId);
   }
 
+  /**
+   * Get messages for a specific chat.
+   */
   @Get(':chatId/messages')
   async getChatMessages(
     @Param('chatId') chatId: string,
@@ -34,6 +40,9 @@ export class ChatController {
     );
   }
 
+  /**
+   * Create a new conversation with specified participants.
+   */
   @Post()
   async createChat(
     @Body() payload: CreateChatDto,
