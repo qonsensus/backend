@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { User } from '../entities/user.entity';
 import { Profile } from '../entities/profile.entity';
 import { Chat } from '../entities/chat.entity';
-import { ChatMessage } from '../entities/conversationMessage.entity';
+import { ChatMessage } from '../entities/chatMessage.entity';
 import { Server } from '../entities/server.entity';
 import { UserToServer } from '../entities/userToServer.entity';
 import { ChatChannel } from '../entities/chatChannel.entity';

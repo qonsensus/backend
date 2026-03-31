@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Chat } from '../entities/chat.entity';
 import { UserToChat } from '../entities/userToChat.entity';
 import { User } from '../entities/user.entity';
-import { ChatMessage } from '../entities/conversationMessage.entity';
+import { ChatMessage } from '../entities/chatMessage.entity';
 import { ConversationController } from './conversation.controller';
 import { NotificationsModule } from '../notifications/notifications.module';
 

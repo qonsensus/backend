@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserToChat } from './userToChat.entity';
-import { ChatMessage } from './conversationMessage.entity';
+import { ChatMessage } from './chatMessage.entity';
 
 @Entity({ name: 'chats' })
 export class Chat {

@@ -5,7 +5,7 @@ import { In, LessThanOrEqual, MoreThan, Repository } from 'typeorm';
 import { UserToChat } from '../entities/userToChat.entity';
 import { User } from '../entities/user.entity';
 import { CreateConversationDto } from './dtos/createConversation.dto';
-import { ChatMessage } from '../entities/conversationMessage.entity';
+import { ChatMessage } from '../entities/chatMessage.entity';
 import { SendMessageDto } from './dtos/sendMessage.dto';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { ConversationDto } from './dtos/conversation.dto';
