@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -15,19 +16,20 @@ export class ChatMessage {
   id: string;
 
   @CreateDateColumn()
+  @Index()
   createdAt: Date;
 
   @Column()
   content: string;
 
   @Column({ nullable: true })
-  conversationId: string;
+  chatId: string;
 
-  @ManyToOne(() => Chat, (conversation) => conversation.messages, {
+  @ManyToOne(() => Chat, (chat) => chat.messages, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  conversation: Chat;
+  chat: Chat;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()

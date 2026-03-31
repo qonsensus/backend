@@ -25,12 +25,12 @@ export class UserToChat {
   @Column()
   chatId: string;
 
-  @ManyToOne(() => User, (user) => user.conversations, {
+  @ManyToOne(() => User, (user) => user.chats, {
     onDelete: 'CASCADE',
   })
   user: User;
 
-  @ManyToOne(() => Chat, (conversation) => conversation.participants, {
+  @ManyToOne(() => Chat, (chat) => chat.participants, {
     onDelete: 'CASCADE',
   })
   chat: Chat;

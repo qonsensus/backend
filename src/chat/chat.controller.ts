@@ -25,7 +25,7 @@ export class ChatController {
     @Req() req: Request,
   ): Promise<ChatMessageDto[]> {
     const userId = req['user'] as string;
-    return await this.conversationService.getConversationMessages(
+    return await this.conversationService.getMessagesOlderThan(
       userId,
       conversationId,
     );

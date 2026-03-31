@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chat } from '../entities/chat.entity';
-import { In, LessThanOrEqual, MoreThan, Repository } from 'typeorm';
+import { In, LessThanOrEqual, Repository } from 'typeorm';
 import { UserToChat } from '../entities/userToChat.entity';
 import { User } from '../entities/user.entity';
 import { CreateChatDto } from './dtos/createChat.dto';
@@ -16,48 +16,48 @@ import { ChatMessageDto } from './dtos/chatMessage.dto';
 export class ChatService {
   constructor(
     @InjectRepository(Chat)
-    private readonly conversationRepository: Repository<Chat>,
+    private readonly chatRepository: Repository<Chat>,
     @InjectRepository(UserToChat)
-    private readonly userToConversationRepository: Repository<UserToChat>,
+    private readonly userToChatRepository: Repository<UserToChat>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(ChatMessage)
-    private readonly conversationMessageRepository: Repository<ChatMessage>,
+    private readonly chatMessageRepository: Repository<ChatMessage>,
     private readonly notificationGateway: NotificationsGateway,
   ) {}
 
   async sendMessage(
-    conversationId: string,
+    chatId: string,
     userId: string,
     payload: SendMessageDto,
   ): Promise<ChatMessageDto> {
     // Verify user is part of the conversation
-    const userToConversation = await this.userToConversationRepository.findOne({
+    const userToChat = await this.userToChatRepository.findOne({
       where: {
         userId: userId,
-        chatId: conversationId,
+        chatId: chatId,
       },
     });
-    if (!userToConversation) {
-      throw new NotFoundException('Conversation not found or access denied');
+    if (!userToChat) {
+      throw new NotFoundException('Chat not found or access denied');
     }
 
     // Create and save the message
-    const message = this.conversationMessageRepository.create();
+    const message = this.chatMessageRepository.create();
     message.content = payload.message;
-    message.conversationId = conversationId;
+    message.chatId = chatId;
     const author = await this.userRepository.findOne({
       where: { id: userId },
       relations: { profile: true },
     });
     if (!author) throw new NotFoundException('Author not found');
     message.author = author;
-    await this.conversationMessageRepository.save(message);
+    await this.chatMessageRepository.save(message);
 
     // Cast to ConversationMessageDto for notification
     const messageDto: ChatMessageDto = {
       id: message.id,
       content: message.content,
-      conversationId: message.conversationId,
+      conversationId: message.chatId,
       authorId: author.id,
       authorProfileId: author.profile.id,
       authorName: author.profile.displayName,
@@ -66,9 +66,9 @@ export class ChatService {
     };
 
     // get all participants in the conversation to notify them of the new message
-    const participants = await this.userToConversationRepository.find({
+    const participants = await this.userToChatRepository.find({
       where: {
-        chatId: conversationId,
+        chatId: chatId,
       },
       relations: {
         user: true,
@@ -80,57 +80,39 @@ export class ChatService {
     return messageDto;
   }
 
-  async getConversationMessages(
+  async getMessagesOlderThan(
     userId: string,
-    conversationId: string,
+    chatId: string,
+    timestamp: Date,
+    take = 20,
   ): Promise<ChatMessageDto[]> {
-    // get the UserToConversation entry to ensure the user has access to the conversation
-    const userToConversation = await this.userToConversationRepository.findOne({
+    // get the UserToChat entry to ensure the user has access to the chat
+    const userToChat = await this.userToChatRepository.findOne({
       where: {
         userId: userId,
-        chatId: conversationId,
+        chatId: chatId,
       },
     });
-    if (!userToConversation) {
-      throw new NotFoundException('Conversation not found or access denied');
+    if (!userToChat) {
+      throw new NotFoundException('Chat not found or access denied');
     }
 
-    // Load all conversation messages newer than lastReadAt
-    const lastReadAt = new Date(userToConversation.lastReadAt);
-
-    const newMessages = await this.conversationMessageRepository.find({
+    const messages = await this.chatMessageRepository.find({
       where: {
-        conversationId,
-        createdAt: MoreThan(lastReadAt),
+        chatId: chatId,
+        createdAt: LessThanOrEqual(new Date(timestamp)),
       },
       relations: {
         author: { profile: true },
       },
-    });
-    const oldMessages = await this.conversationMessageRepository.find({
-      where: {
-        conversationId,
-        createdAt: LessThanOrEqual(lastReadAt),
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-      relations: {
-        author: { profile: true },
-      },
-      take: 50,
+      order: { createdAt: 'DESC' },
+      take,
     });
 
-    // Update lastReadAt to now
-    userToConversation.lastReadAt = new Date();
-    await this.userToConversationRepository.save(userToConversation);
-
-    // Return combined messages, with new messages first
-    const fullMessageList = [...oldMessages.reverse(), ...newMessages];
-    return fullMessageList.map((message) => ({
+    return messages.map((message) => ({
       id: message.id,
       content: message.content,
-      conversationId: message.conversationId,
+      conversationId: message.chatId,
       authorId: message.author.id,
       authorProfileId: message.author.profile.id,
       authorName: message.author.profile.displayName,
@@ -139,8 +121,22 @@ export class ChatService {
     }));
   }
 
+  async updateLastReadAt(userId: string, chatId: string): Promise<void> {
+    const userToChat = await this.userToChatRepository.findOne({
+      where: {
+        userId: userId,
+        chatId: chatId,
+      },
+    });
+    if (!userToChat) {
+      throw new NotFoundException('Chat not found or access denied');
+    }
+    userToChat.lastReadAt = new Date();
+    await this.userToChatRepository.save(userToChat);
+  }
+
   async getAllConversationsForUser(userId: string): Promise<ChatDto[]> {
-    const userToConversations = await this.userToConversationRepository.find({
+    const userToConversations = await this.userToChatRepository.find({
       where: { user: { id: userId } },
       relations: {
         chat: {
@@ -182,7 +178,7 @@ export class ChatService {
 
     // Generate a hash of the participant IDs to check for existing conversations
     const hash = this.generateParticipantsHash(payload.participantIds);
-    const existingConversation = await this.conversationRepository.findOne({
+    const existingConversation = await this.chatRepository.findOne({
       where: { participantsHash: hash },
       relations: {
         participants: {
@@ -203,35 +199,32 @@ export class ChatService {
     }
 
     // Create the conversation
-    const conversation = this.conversationRepository.create({
+    const conversation = this.chatRepository.create({
       participantsHash: participants.length == 2 ? hash : undefined,
     });
-    await this.conversationRepository.save(conversation);
+    await this.chatRepository.save(conversation);
 
     // Create UserToConversation entries for each participant
     const userToConversations = participants.map((user) =>
-      this.userToConversationRepository.create({
+      this.userToChatRepository.create({
         user,
         chat: conversation,
         lastReadAt: new Date(0),
       }),
     );
-    await this.userToConversationRepository.save(userToConversations);
+    await this.userToChatRepository.save(userToConversations);
 
-    // Cast to ConversationDto for notification
-    const conversationDto: ChatDto = {
+    // Cast to ChatDto for notification
+    const chatDto: ChatDto = {
       id: conversation.id,
       participants: participants.map((p) => p.profile),
     };
 
     // Notify participants of the new conversation
     const recipientIds = participants.map((p) => p.id);
-    this.notificationGateway.notifyNewConversation(
-      recipientIds,
-      conversationDto,
-    );
+    this.notificationGateway.notifyNewConversation(recipientIds, chatDto);
 
-    return conversationDto;
+    return chatDto;
   }
 
   private generateParticipantsHash(participantIds: string[]): string {

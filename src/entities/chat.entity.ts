@@ -34,7 +34,7 @@ export class Chat {
   )
   participants: UserToChat[];
 
-  @OneToMany(() => ChatMessage, (message) => message.conversation, {
+  @OneToMany(() => ChatMessage, (message) => message.chat, {
     cascade: ['remove'],
   })
   messages: ChatMessage[];

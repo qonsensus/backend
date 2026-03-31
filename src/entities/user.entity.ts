@@ -41,8 +41,8 @@ export class User {
   })
   servers: UserToServer[];
 
-  @OneToMany(() => UserToChat, (userToConversation) => userToConversation.user)
-  conversations: UserToChat[];
+  @OneToMany(() => UserToChat, (userToChat) => userToChat.user)
+  chats: UserToChat[];
 
   @OneToMany(
     () => UserToChatChannel,
