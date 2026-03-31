@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Conversation } from '../entities/conversation.entity';
+import { Chat } from '../entities/chat.entity';
 import { In, LessThanOrEqual, MoreThan, Repository } from 'typeorm';
-import { UserToConversation } from '../entities/userToConversation.entity';
+import { UserToChat } from '../entities/userToChat.entity';
 import { User } from '../entities/user.entity';
 import { CreateConversationDto } from './dtos/createConversation.dto';
-import { ConversationMessage } from '../entities/conversationMessage.entity';
+import { ChatMessage } from '../entities/conversationMessage.entity';
 import { SendMessageDto } from './dtos/sendMessage.dto';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { ConversationDto } from './dtos/conversation.dto';
@@ -15,13 +15,13 @@ import { ConversationMessageDto } from './dtos/conversationMessage.dto';
 @Injectable()
 export class ConversationService {
   constructor(
-    @InjectRepository(Conversation)
-    private readonly conversationRepository: Repository<Conversation>,
-    @InjectRepository(UserToConversation)
-    private readonly userToConversationRepository: Repository<UserToConversation>,
+    @InjectRepository(Chat)
+    private readonly conversationRepository: Repository<Chat>,
+    @InjectRepository(UserToChat)
+    private readonly userToConversationRepository: Repository<UserToChat>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(ConversationMessage)
-    private readonly conversationMessageRepository: Repository<ConversationMessage>,
+    @InjectRepository(ChatMessage)
+    private readonly conversationMessageRepository: Repository<ChatMessage>,
     private readonly notificationGateway: NotificationsGateway,
   ) {}
 
@@ -34,7 +34,7 @@ export class ConversationService {
     const userToConversation = await this.userToConversationRepository.findOne({
       where: {
         userId: userId,
-        conversationId,
+        chatId: conversationId,
       },
     });
     if (!userToConversation) {
@@ -68,7 +68,7 @@ export class ConversationService {
     // get all participants in the conversation to notify them of the new message
     const participants = await this.userToConversationRepository.find({
       where: {
-        conversationId,
+        chatId: conversationId,
       },
       relations: {
         user: true,
@@ -88,7 +88,7 @@ export class ConversationService {
     const userToConversation = await this.userToConversationRepository.findOne({
       where: {
         userId: userId,
-        conversationId,
+        chatId: conversationId,
       },
     });
     if (!userToConversation) {
@@ -143,7 +143,7 @@ export class ConversationService {
     const userToConversations = await this.userToConversationRepository.find({
       where: { user: { id: userId } },
       relations: {
-        conversation: {
+        chat: {
           participants: {
             user: {
               profile: true,
@@ -153,15 +153,13 @@ export class ConversationService {
       },
     });
     return userToConversations.map((utc) => {
-      const participants = utc.conversation.participants.map(
-        (p) => p.user.profile,
-      );
+      const participants = utc.chat.participants.map((p) => p.user.profile);
       // exclude the current user from the participants list
       const otherParticipants = participants.filter(
         (p) => p.ownerId !== userId,
       );
       return {
-        id: utc.conversation.id,
+        id: utc.chat.id,
         participants: otherParticipants,
       };
     });
@@ -214,7 +212,7 @@ export class ConversationService {
     const userToConversations = participants.map((user) =>
       this.userToConversationRepository.create({
         user,
-        conversation,
+        chat: conversation,
         lastReadAt: new Date(0),
       }),
     );

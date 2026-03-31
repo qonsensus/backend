@@ -6,11 +6,11 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Conversation } from './conversation.entity';
+import { Chat } from './chat.entity';
 import { User } from './user.entity';
 
-@Entity({ name: 'conversation_messages' })
-export class ConversationMessage {
+@Entity({ name: 'chat_messages' })
+export class ChatMessage {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -23,11 +23,11 @@ export class ConversationMessage {
   @Column({ nullable: true })
   conversationId: string;
 
-  @ManyToOne(() => Conversation, (conversation) => conversation.messages, {
+  @ManyToOne(() => Chat, (conversation) => conversation.messages, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  conversation: Conversation;
+  conversation: Chat;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()
