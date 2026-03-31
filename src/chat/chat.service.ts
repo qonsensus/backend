@@ -161,10 +161,7 @@ export class ChatService {
     });
   }
 
-  async createConversation(
-    userId: string,
-    payload: CreateChatDto,
-  ): Promise<ChatDto> {
+  async createChat(userId: string, payload: CreateChatDto): Promise<ChatDto> {
     // ensure the creator is included in the participant list
     payload.participantIds.push(userId); // Ensure the creator is included as a participant
     const participants = await this.userRepository.find({
