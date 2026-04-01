@@ -2,32 +2,34 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Conversation } from './conversation.entity';
+import { Chat } from './chat.entity';
 import { User } from './user.entity';
 
-@Entity({ name: 'conversation_messages' })
-export class ConversationMessage {
+@Entity({ name: 'chat_messages' })
+export class ChatMessage {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @CreateDateColumn()
+  @Index()
   createdAt: Date;
 
   @Column()
   content: string;
 
   @Column({ nullable: true })
-  conversationId: string;
+  chatId: string;
 
-  @ManyToOne(() => Conversation, (conversation) => conversation.messages, {
+  @ManyToOne(() => Chat, (chat) => chat.messages, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  conversation: Conversation;
+  chat: Chat;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()

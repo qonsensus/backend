@@ -2,12 +2,12 @@ import { DataSource, type DataSourceOptions } from 'typeorm';
 import { join } from 'node:path';
 import { User } from '../entities/user.entity';
 import { Profile } from '../entities/profile.entity';
-import { Conversation } from '../entities/conversation.entity';
-import { ConversationMessage } from '../entities/conversationMessage.entity';
+import { Chat } from '../entities/chat.entity';
+import { ChatMessage } from '../entities/chatMessage.entity';
 import { Server } from '../entities/server.entity';
 import { UserToServer } from '../entities/userToServer.entity';
 import { ChatChannel } from '../entities/chatChannel.entity';
-import { UserToConversation } from '../entities/userToConversation.entity';
+import { UserToChat } from '../entities/userToChat.entity';
 import { ChatChannelMessage } from '../entities/chatChannelMessage.entity';
 import { UserToChatChannel } from '../entities/userToChatChannel.entity';
 import { Friendship } from '../entities/friendship.entity';
@@ -24,12 +24,12 @@ export const dataSourceOptions: DataSourceOptions = {
   entities: [
     User,
     Profile,
-    Conversation,
-    ConversationMessage,
+    Chat,
+    ChatMessage,
     Server,
     UserToServer,
     ChatChannel,
-    UserToConversation,
+    UserToChat,
     ChatChannelMessage,
     UserToChatChannel,
     Friendship,

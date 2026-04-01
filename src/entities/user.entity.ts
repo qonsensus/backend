@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { Profile } from './profile.entity';
 import { UserToServer } from './userToServer.entity';
-import { UserToConversation } from './userToConversation.entity';
+import { UserToChat } from './userToChat.entity';
 import { UserToChatChannel } from './userToChatChannel.entity';
 import { Friendship } from './friendship.entity';
 
@@ -41,11 +41,8 @@ export class User {
   })
   servers: UserToServer[];
 
-  @OneToMany(
-    () => UserToConversation,
-    (userToConversation) => userToConversation.user,
-  )
-  conversations: UserToConversation[];
+  @OneToMany(() => UserToChat, (userToChat) => userToChat.user)
+  chats: UserToChat[];
 
   @OneToMany(
     () => UserToChatChannel,
