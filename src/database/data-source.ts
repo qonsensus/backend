@@ -11,6 +11,7 @@ import { UserToConversation } from '../entities/userToConversation.entity';
 import { ChatChannelMessage } from '../entities/chatChannelMessage.entity';
 import { UserToChatChannel } from '../entities/userToChatChannel.entity';
 import { Friendship } from '../entities/friendship.entity';
+import { UserKey } from 'src/entities/userKey.entity';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -23,6 +24,7 @@ export const dataSourceOptions: DataSourceOptions = {
   synchronize: false,
   entities: [
     User,
+    UserKey,
     Profile,
     Conversation,
     ConversationMessage,
