@@ -5,11 +5,12 @@ import {
   WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
-import { SendMessageDto } from './dtos/sendMessage.dto';
+import { SendMessageWsDto } from './dtos/sendMessage.ws.dto';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../entities/user.entity';
+import { ChatMessageDto } from './dtos/chatMessage.dto';
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -44,8 +45,8 @@ export class ChatGateway implements OnGatewayConnection {
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     client: Socket,
-    payload: SendMessageDto,
-  ): Promise<any> {
+    payload: SendMessageWsDto,
+  ): Promise<ChatMessageDto> {
     const clientData = client.data as { user: User };
     if (!clientData || !clientData.user) {
       throw new WsException('Unauthorized');
@@ -62,7 +63,7 @@ export class ChatGateway implements OnGatewayConnection {
     );
     for (const participant of otherParticipants) {
       this.server
-        .to(`user:${participant.id}`)
+        .to(`user:${participant.ownerId}`)
         .emit('newMessage', { chatId: payload.chatId, message });
     }
     return message;
@@ -82,7 +83,7 @@ export class ChatGateway implements OnGatewayConnection {
     );
     for (const participant of otherParticipants) {
       this.server
-        .to(`user:${participant.id}`)
+        .to(`user:${participant.ownerId}`)
         .emit('typing', { chatId: payload.chatId, userId: clientData.user.id });
     }
   }
@@ -100,7 +101,7 @@ export class ChatGateway implements OnGatewayConnection {
       (participant) => participant.ownerId !== clientData.user.id,
     );
     for (const participant of otherParticipants) {
-      this.server.to(`user:${participant.id}`).emit('stopTyping', {
+      this.server.to(`user:${participant.ownerId}`).emit('stopTyping', {
         chatId: payload.chatId,
         userId: clientData.user.id,
       });
@@ -121,7 +122,7 @@ export class ChatGateway implements OnGatewayConnection {
       (participant) => participant.ownerId !== clientData.user.id,
     );
     for (const participant of otherParticipants) {
-      this.server.to(`user:${participant.id}`).emit('messagesRead', {
+      this.server.to(`user:${participant.ownerId}`).emit('messagesRead', {
         chatId: payload.chatId,
         userId: clientData.user.id,
       });

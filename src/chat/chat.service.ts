@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chat } from '../entities/chat.entity';
-import { In, LessThanOrEqual, Repository } from 'typeorm';
+import { In, LessThanOrEqual, MoreThan, Repository } from 'typeorm';
 import { UserToChat } from '../entities/userToChat.entity';
 import { User } from '../entities/user.entity';
 import { CreateChatDto } from './dtos/createChat.dto';
 import { ChatMessage } from '../entities/chatMessage.entity';
-import { SendMessageDto } from './dtos/sendMessage.dto';
+import { SendMessageWsDto } from './dtos/sendMessage.ws.dto';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { ChatDto } from './dtos/chat.dto';
 import { createHash } from 'node:crypto';
@@ -26,6 +26,27 @@ export class ChatService {
     private readonly notificationGateway: NotificationsGateway,
   ) {}
 
+  async getUnseenMessagesCount(
+    userId: string,
+    chatId: string,
+  ): Promise<number> {
+    const userToChat = await this.userToChatRepository.findOne({
+      where: {
+        userId: userId,
+        chatId: chatId,
+      },
+    });
+    if (!userToChat) {
+      throw new NotFoundException('Chat not found or access denied');
+    }
+    return this.chatMessageRepository.count({
+      where: {
+        chatId: chatId,
+        createdAt: MoreThan(userToChat.lastReadAt || new Date(0)),
+      },
+    });
+  }
+
   async getParticipantsForChat(chatId: string): Promise<Profile[]> {
     const userToChatEntries = await this.userToChatRepository.find({
       where: { chatId },
@@ -36,7 +57,7 @@ export class ChatService {
 
   async sendMessage(
     userId: string,
-    payload: SendMessageDto,
+    payload: SendMessageWsDto,
   ): Promise<ChatMessageDto> {
     // Verify user is part of the conversation
     const userToChat = await this.userToChatRepository.findOne({
@@ -65,7 +86,7 @@ export class ChatService {
     const messageDto: ChatMessageDto = {
       id: message.id,
       content: message.content,
-      conversationId: message.chatId,
+      chatId: message.chatId,
       authorId: author.id,
       authorProfileId: author.profile.id,
       authorName: author.profile.displayName,
@@ -92,7 +113,7 @@ export class ChatService {
     userId: string,
     chatId: string,
     timestamp: Date,
-    take = 20,
+    take = 100,
   ): Promise<ChatMessageDto[]> {
     // get the UserToChat entry to ensure the user has access to the chat
     const userToChat = await this.userToChatRepository.findOne({
@@ -120,7 +141,7 @@ export class ChatService {
     return messages.map((message) => ({
       id: message.id,
       content: message.content,
-      conversationId: message.chatId,
+      chatId: message.chatId,
       authorId: message.author.id,
       authorProfileId: message.author.profile.id,
       authorName: message.author.profile.displayName,
@@ -155,7 +176,7 @@ export class ChatService {
     return {
       id: message.id,
       content: message.content,
-      conversationId: message.chatId,
+      chatId: message.chatId,
       authorId: message.author.id,
       authorProfileId: message.author.profile.id,
       authorName: message.author.profile.displayName,
@@ -192,11 +213,16 @@ export class ChatService {
         },
         null,
       );
+      const unseenMessagesCount = utc.chat.messages.filter(
+        (message) => message.createdAt > utc.lastReadAt,
+      ).length;
       return {
         id: utc.chat.id,
         participants: otherParticipants,
         latestMessageContent: latestMessage ? latestMessage.content : null,
         latestMessageCreatedAt: latestMessage ? latestMessage.createdAt : null,
+        unseenMessagesCount,
+        lastReadAt: utc.lastReadAt,
       };
     });
   }
@@ -215,7 +241,7 @@ export class ChatService {
 
     // Generate a hash of the participant IDs to check for existing conversations
     const hash = this.generateParticipantsHash(payload.participantIds);
-    const existingConversation = await this.chatRepository.findOne({
+    const existingChat = await this.chatRepository.findOne({
       where: { participantsHash: hash },
       relations: {
         participants: {
@@ -225,19 +251,9 @@ export class ChatService {
         },
       },
     });
-    if (existingConversation) {
-      const latestMessage = await this.getLatestMessageForChat(
-        existingConversation.id,
-      );
-      // If a conversation with the same participants exists, return it
-      return {
-        id: existingConversation.id,
-        participants: existingConversation.participants.map(
-          (p) => p.user.profile,
-        ),
-        latestMessageContent: latestMessage ? latestMessage.content : null,
-        latestMessageCreatedAt: latestMessage ? latestMessage.createdAt : null,
-      };
+    // If a conversation with the same participants already exists, return it instead of creating a new one
+    if (existingChat) {
+      return this.getChatById(userId, existingChat.id);
     }
 
     // Create the conversation
@@ -262,6 +278,8 @@ export class ChatService {
       participants: participants.map((p) => p.profile),
       latestMessageContent: null,
       latestMessageCreatedAt: null,
+      unseenMessagesCount: 0,
+      lastReadAt: new Date(0),
     };
 
     // Notify participants of the new conversation
@@ -269,6 +287,43 @@ export class ChatService {
     this.notificationGateway.notifyNewConversation(recipientIds, chatDto);
 
     return chatDto;
+  }
+
+  async getChatById(userId: string, chatId: string): Promise<ChatDto> {
+    const chat = await this.chatRepository.findOne({
+      where: { id: chatId },
+      relations: {
+        participants: {
+          user: {
+            profile: true,
+          },
+        },
+        messages: true,
+      },
+    });
+    if (!chat) throw new NotFoundException('Chat not found');
+    const lastReadAt = (
+      await this.userToChatRepository.findOne({
+        where: {
+          userId: userId,
+          chatId: chatId,
+        },
+      })
+    )?.lastReadAt;
+    if (!lastReadAt) throw new NotFoundException('Chat not found');
+    const unseenMessagesCount = await this.getUnseenMessagesCount(
+      userId,
+      chatId,
+    );
+    const latestMessage = await this.getLatestMessageForChat(chatId);
+    return {
+      id: chat.id,
+      participants: chat.participants.map((p) => p.user.profile),
+      latestMessageContent: latestMessage ? latestMessage.content : null,
+      latestMessageCreatedAt: latestMessage ? latestMessage.createdAt : null,
+      unseenMessagesCount,
+      lastReadAt,
+    };
   }
 
   private generateParticipantsHash(participantIds: string[]): string {

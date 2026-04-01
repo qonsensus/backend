@@ -1,7 +1,7 @@
 export class ChatMessageDto {
   id: string;
   content: string;
-  conversationId: string;
+  chatId: string;
   authorId: string;
   authorProfileId: string;
   authorName: string;

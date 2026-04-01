@@ -5,4 +5,6 @@ export class ChatDto {
   participants: Profile[];
   latestMessageContent: string | null;
   latestMessageCreatedAt: Date | null;
+  unseenMessagesCount: number;
+  lastReadAt: Date;
 }
