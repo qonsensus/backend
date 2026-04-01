@@ -11,6 +11,7 @@ import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { ChatDto } from './dtos/chat.dto';
 import { createHash } from 'node:crypto';
 import { ChatMessageDto } from './dtos/chatMessage.dto';
+import { Profile } from '../entities/profile.entity';
 
 @Injectable()
 export class ChatService {
@@ -25,8 +26,15 @@ export class ChatService {
     private readonly notificationGateway: NotificationsGateway,
   ) {}
 
+  async getParticipantsForChat(chatId: string): Promise<Profile[]> {
+    const userToChatEntries = await this.userToChatRepository.find({
+      where: { chatId },
+      relations: { user: { profile: true } },
+    });
+    return userToChatEntries.map((entry) => entry.user.profile);
+  }
+
   async sendMessage(
-    chatId: string,
     userId: string,
     payload: SendMessageDto,
   ): Promise<ChatMessageDto> {
@@ -34,7 +42,7 @@ export class ChatService {
     const userToChat = await this.userToChatRepository.findOne({
       where: {
         userId: userId,
-        chatId: chatId,
+        chatId: payload.chatId,
       },
     });
     if (!userToChat) {
@@ -44,7 +52,7 @@ export class ChatService {
     // Create and save the message
     const message = this.chatMessageRepository.create();
     message.content = payload.message;
-    message.chatId = chatId;
+    message.chatId = payload.chatId;
     const author = await this.userRepository.findOne({
       where: { id: userId },
       relations: { profile: true },
@@ -68,7 +76,7 @@ export class ChatService {
     // get all participants in the conversation to notify them of the new message
     const participants = await this.userToChatRepository.find({
       where: {
-        chatId: chatId,
+        chatId: payload.chatId,
       },
       relations: {
         user: true,
