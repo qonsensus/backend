@@ -9,9 +9,11 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ConversationModule } from './conversation/conversation.module';
 import { dataSourceOptions } from './database/data-source';
 import { MediasoupModule } from './mediasoup/mediasoup.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot(dataSourceOptions),
     UserModule,
     AuthModule,

@@ -11,14 +11,26 @@ import {
 import { MediasoupService } from './mediasoup.service';
 import { Room } from './interfaces/room.interface';
 import { Peer } from './interfaces/peer.interface';
+import { ConfigService } from '@nestjs/config';
+import { createHmac } from 'node:crypto';
 
 // The shape of data we send back to clients when a transport is created.
 // The client needs all four fields to complete the WebRTC handshake.
+// iceServers is optional — only populated in production so the browser
+// can reach the mediasoup server from behind a NAT via TURN.
+export interface IceServerCredential {
+  urls: string;
+  username: string;
+  credential: string;
+}
+
 export interface TransportOptions {
   id: string;
   iceParameters: WebRtcTransport['iceParameters'];
   iceCandidates: WebRtcTransport['iceCandidates'];
   dtlsParameters: WebRtcTransport['dtlsParameters'];
+  /** Pass these directly to the mediasoup-client Device / RTCPeerConnection */
+  iceServers: IceServerCredential[];
 }
 
 @Injectable()
@@ -28,7 +40,10 @@ export class RoomService {
   // All active rooms, keyed by room ID
   private readonly rooms = new Map<string, Room>();
 
-  constructor(private readonly mediasoupService: MediasoupService) {}
+  constructor(
+    private readonly mediasoupService: MediasoupService,
+    private readonly configService: ConfigService,
+  ) {}
 
   // ── Room management ───────────────────────────────────────────────────────
 
@@ -100,28 +115,53 @@ export class RoomService {
     // In production, replace 'yourdomain.com' with an env variable.
     const announcedIp = await this.resolveAnnouncedIp();
 
+    // Build TURN credentials for the CLIENT — mediasoup itself does NOT use
+    // iceServers; only the browser's RTCPeerConnection does.
+    const iceServers: IceServerCredential[] = [];
+
+    if (this.configService.get<string>('NODE_ENV') === 'production') {
+      const turnDomain = this.configService.getOrThrow<string>('TURN_HOST');
+      const turnPort = this.configService.getOrThrow<number>('TURN_PORT');
+      const turnSecret = this.configService.getOrThrow<string>('TURN_SECRET');
+
+      // Time-limited credential via the TURN shared-secret method (RFC 8489 §9.2)
+      const turnUsername = `${Math.floor(Date.now() / 1000) + 3600}`; // valid for 1 hour
+      const turnCredential = createHmac('sha1', turnSecret)
+        .update(turnUsername)
+        .digest('base64');
+
+      iceServers.push({
+        urls: `turn:${turnDomain}:${turnPort}`,
+        username: turnUsername,
+        credential: turnCredential,
+      });
+    }
+
+    // Note: no iceServers here — that option does not exist on the server side
     const transport = await room.router.createWebRtcTransport({
       listenInfos: [
         {
           protocol: 'udp',
           ip: '0.0.0.0',
           announcedAddress: announcedIp,
-          portRange: { min: 40000, max: 49999 },
+          portRange: {
+            min: this.configService.getOrThrow<number>('MEDIASOUP_MIN'),
+            max: this.configService.getOrThrow<number>('MEDIASOUP_MAX'),
+          },
         },
         {
           protocol: 'tcp',
           ip: '0.0.0.0',
           announcedAddress: announcedIp,
-          portRange: { min: 40000, max: 49999 },
+          portRange: {
+            min: this.configService.getOrThrow<number>('MEDIASOUP_MIN'),
+            max: this.configService.getOrThrow<number>('MEDIASOUP_MAX'),
+          },
         },
       ],
       enableUdp: true,
       enableTcp: true,
       preferUdp: true,
-      // If you have coturn running, add it here:
-      // iceServers: [
-      //   { urls: 'turn:yourdomain.com:3478', username: 'user', credential: 'pass' },
-      // ],
     });
 
     transport.on('dtlsstatechange', (state) => {
@@ -138,6 +178,7 @@ export class RoomService {
       iceParameters: transport.iceParameters,
       iceCandidates: transport.iceCandidates,
       dtlsParameters: transport.dtlsParameters,
+      iceServers, // forwarded to the client for its RTCPeerConnection
     };
   }
 
