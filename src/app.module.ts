@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { FriendsModule } from './friends/friends.module';
 import { ProfileModule } from './profile/profile.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { ConversationModule } from './conversation/conversation.module';
+import { ChatModule } from './chat/chat.module';
 import { dataSourceOptions } from './database/data-source';
 import { MediasoupModule } from './mediasoup/mediasoup.module';
 import { ConfigModule } from '@nestjs/config';
@@ -20,7 +20,7 @@ import { ConfigModule } from '@nestjs/config';
     FriendsModule,
     ProfileModule,
     NotificationsModule,
-    ConversationModule,
+    ChatModule,
     MediasoupModule,
   ],
   controllers: [AppController],
