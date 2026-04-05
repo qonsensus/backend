@@ -178,7 +178,7 @@ export class RoomService {
       iceParameters: transport.iceParameters,
       iceCandidates: transport.iceCandidates,
       dtlsParameters: transport.dtlsParameters,
-      iceServers: iceServers.length > 1 ? iceServers : null, // forwarded to the client for its RTCPeerConnection
+      iceServers: iceServers.length > 0 ? iceServers : null, // forwarded to the client for its RTCPeerConnection
     };
   }
 
