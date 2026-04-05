@@ -30,7 +30,7 @@ export interface TransportOptions {
   iceCandidates: WebRtcTransport['iceCandidates'];
   dtlsParameters: WebRtcTransport['dtlsParameters'];
   /** Pass these directly to the mediasoup-client Device / RTCPeerConnection */
-  iceServers: IceServerCredential[];
+  iceServers: IceServerCredential[] | null;
 }
 
 @Injectable()
@@ -178,7 +178,7 @@ export class RoomService {
       iceParameters: transport.iceParameters,
       iceCandidates: transport.iceCandidates,
       dtlsParameters: transport.dtlsParameters,
-      iceServers, // forwarded to the client for its RTCPeerConnection
+      iceServers: iceServers.length > 0 ? iceServers : null, // forwarded to the client for its RTCPeerConnection
     };
   }
 
