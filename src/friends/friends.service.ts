@@ -11,6 +11,7 @@ import { FriendshipListItemDto } from './dtos/friendshipListItem.dto';
 import { IncomingFrienshipRequestDto } from './dtos/incomingFrienshipRequest.dto';
 import { OutgoingFrienshipRequestDto } from './dtos/outgoingFrienshipRequest.dto';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { Profile } from '../entities/profile.entity';
 
 @Injectable()
 export class FriendsService {
@@ -19,6 +20,8 @@ export class FriendsService {
     private readonly friendshipRepository: Repository<Friendship>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly notificationsGateway: NotificationsGateway,
+    @InjectRepository(Profile)
+    private readonly profileRepository: Repository<Profile>,
   ) {}
 
   /**
@@ -240,6 +243,69 @@ export class FriendsService {
         friendId: f.requesterId,
         friendProfile: f.requester.profile,
       });
+    });
+    return finalList;
+  }
+
+  /**
+   * Searches for friends of a given user based on a display name query. Only friendships where the status is ACCEPTED are considered, and the search is performed using a trigram similarity search on the display name of the friend's profile.
+   * @param userId - The ID of the user whose friends are to be searched.
+   * @param displayName - The display name query to search for among the user's friends.
+   * @param top - The maximum number of matching friends to return per page.
+   * @param page - The current page number for pagination (starting from 1).
+   * @returns A list of FriendshipListItemDto objects representing the friends of the specified user that match the display name query, including the date they became friends and the friend's profile information.
+   */
+  async searchFriends(
+    userId: string,
+    displayName: string,
+    top: number,
+    page: number,
+  ): Promise<FriendshipListItemDto[]> {
+    const friendships = await this.friendshipRepository.find({
+      where: [
+        { requesterId: userId, status: FriendshipStatus.ACCEPTED },
+        { recipientId: userId, status: FriendshipStatus.ACCEPTED },
+      ],
+      relations: {
+        requester: { profile: true },
+        recipient: { profile: true },
+      },
+    });
+    // get the profile ids of all the user's friends
+    const friendProfileIds = friendships.map((f) =>
+      f.requesterId === userId
+        ? f.recipient.profile.id
+        : f.requester.profile.id,
+    );
+    // use query builder to search for display name using trgm gin index on profiles table, and filter by the profile ids of the user's friends
+    const matchingProfiles = await this.profileRepository
+      .createQueryBuilder('profile')
+      .where('profile.displayName % :displayName', { displayName })
+      .andWhere('profile.id IN (:...friendProfileIds)', { friendProfileIds })
+      .orderBy('similarity(profile.displayName, :displayName)', 'DESC')
+      .setParameters({ displayName })
+      .take(top)
+      .skip((page - 1) * top)
+      .getMany();
+    // map the matching profiles back to the friendship list items
+    const finalList: FriendshipListItemDto[] = [];
+    matchingProfiles.forEach((profile) => {
+      const friendship = friendships.find(
+        (f) =>
+          (f.requesterId === userId && f.recipient.profile.id === profile.id) ||
+          (f.recipientId === userId && f.requester.profile.id === profile.id),
+      );
+      if (friendship) {
+        finalList.push({
+          id: friendship.id,
+          friendsSince: friendship.updatedAt,
+          friendId:
+            friendship.requesterId === userId
+              ? friendship.recipientId
+              : friendship.requesterId,
+          friendProfile: profile,
+        });
+      }
     });
     return finalList;
   }
