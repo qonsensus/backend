@@ -31,9 +31,10 @@ export class FriendsController {
     @Req() req: Request,
     @Query('top') top: number = 20,
     @Query('page') page: number = 1,
+    @Query('getAll') getAll: boolean = false,
   ): Promise<FriendshipListItemDto[]> {
     const userId = req['user'] as string;
-    return this.friendsService.getAllFriends(userId, top, page);
+    return this.friendsService.getAllFriends(userId, top, page, getAll);
   }
 
   /**

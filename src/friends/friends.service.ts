@@ -199,12 +199,14 @@ export class FriendsService {
    * @param userId - The ID of the user whose friends are to be retrieved.
    * @param top - The maximum number of friends to return per page.
    * @param page - The current page number for pagination (starting from 1).
+   * @param getAll - A boolean flag indicating whether to retrieve all friends without pagination (if true) or to apply pagination (if false). If true, the top and page parameters are ignored and all friends are returned.
    * @returns A list of FriendshipListItemDto objects representing the friends of the specified user, including the date they became friends and the friend's profile information.
    */
   async getAllFriends(
     userId: string,
     top: number,
     page: number,
+    getAll: boolean,
   ): Promise<FriendshipListItemDto[]> {
     const friendships = await this.friendshipRepository.find({
       where: [
@@ -212,8 +214,8 @@ export class FriendsService {
         { recipientId: userId, status: FriendshipStatus.ACCEPTED },
       ],
       order: { updatedAt: 'DESC' },
-      take: top,
-      skip: (page - 1) * top,
+      take: getAll ? undefined : top,
+      skip: getAll ? undefined : (page - 1) * top,
       relations: [
         'recipient',
         'requester',
