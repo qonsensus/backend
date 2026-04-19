@@ -31,9 +31,25 @@ export class FriendsController {
     @Req() req: Request,
     @Query('top') top: number = 20,
     @Query('page') page: number = 1,
+    @Query('getAll') getAll: boolean = false,
   ): Promise<FriendshipListItemDto[]> {
     const userId = req['user'] as string;
-    return this.friendsService.getAllFriends(userId, top, page);
+    return this.friendsService.getAllFriends(userId, top, page, getAll);
+  }
+
+  /**
+   * Search for friends by display name for the authenticated user with pagination.
+   * @remarks This endpoint allows the authenticated user to search for friends by their display name. The user's ID is extracted from the request object, and the search query is provided as a query parameter. The `top` query parameter specifies the number of friends to return per page (default is 20), and the `page` query parameter specifies the page number to retrieve (default is 1). The response includes an array of friendship list items that match the search query, each containing information about a friend.
+   */
+  @Get('search')
+  async searchFriends(
+    @Req() req: Request,
+    @Query('query') query: string,
+    @Query('top') top: number = 20,
+    @Query('page') page: number = 1,
+  ): Promise<FriendshipListItemDto[]> {
+    const userId = req['user'] as string;
+    return this.friendsService.searchFriends(userId, query, top, page);
   }
 
   /**

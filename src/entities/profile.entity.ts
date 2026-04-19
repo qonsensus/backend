@@ -16,6 +16,7 @@ export enum Status {
 }
 
 @Entity({ name: 'profiles' })
+@Index('displayName_trgmidx', { synchronize: false })
 export class Profile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -24,7 +25,6 @@ export class Profile {
   updatedAt: Date;
 
   @Column()
-  @Index()
   displayName: string;
 
   @Column({ unique: true })
