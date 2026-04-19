@@ -249,6 +249,23 @@ export class MediasoupGateway implements OnGatewayDisconnect {
     }
   }
 
+  // TODO: This does not work fix it
+  // @SubscribeMessage('startCall')
+  // async handleStartCall(client: Socket, payload: StartCallWsDto) {
+  //   const clientData = client.data as { user: User };
+  //   if (!clientData || !clientData.user) {
+  //     throw new WsException('Unauthorized');
+  //   }
+  //   const participantIds = payload.participants;
+  //   // ensure the caller is not in the list of ids
+  //   const finalParticipantIds = participantIds.filter(
+  //     (id) => id !== clientData.user.id,
+  //   );
+  //   for (const participant of finalParticipantIds) {
+  //     const room =
+  //   }
+  // }
+
   // ── Cleanup on disconnect ────────────────────────────────────────────────────
   handleDisconnect(socket: Socket) {
     const roomId = this.socketRoomMap.get(socket.id);
