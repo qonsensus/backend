@@ -10,6 +10,7 @@ import { ChatModule } from './chat/chat.module';
 import { dataSourceOptions } from './database/data-source';
 import { MediasoupModule } from './mediasoup/mediasoup.module';
 import { ConfigModule } from '@nestjs/config';
+import { MediasoupRewriteModule } from './mediasoup-rewrite/mediasoup-rewrite.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ConfigModule } from '@nestjs/config';
     NotificationsModule,
     ChatModule,
     MediasoupModule,
+    MediasoupRewriteModule,
   ],
   controllers: [AppController],
 })
