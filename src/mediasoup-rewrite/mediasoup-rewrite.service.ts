@@ -1,4 +1,81 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { MediasoupService } from '../mediasoup/mediasoup.service';
+import { Router, RouterRtpCodecCapability, Worker } from 'mediasoup/types';
+import * as mediasoup from 'mediasoup';
 
 @Injectable()
-export class MediasoupRewriteService {}
+export class MediasoupRewriteService implements OnModuleInit {
+  private readonly logger = new Logger(MediasoupService.name);
+
+  private workers: Worker[] = [];
+  private workerIndex = 0;
+
+  private readonly mediaCodecs: RouterRtpCodecCapability[] = [
+    {
+      kind: 'audio',
+      mimeType: 'audio/opus',
+      clockRate: 48000,
+      channels: 2,
+    },
+    {
+      kind: 'video',
+      mimeType: 'video/VP8',
+      clockRate: 90000,
+    },
+    {
+      kind: 'video',
+      mimeType: 'video/VP9',
+      clockRate: 90000,
+    },
+    {
+      kind: 'video',
+      mimeType: 'video/H264',
+      clockRate: 90000,
+      parameters: {
+        'packetization-mode': 1,
+        'profile-level-id': '42e01f',
+        'level-asymmetry-allowed': 1,
+      },
+    },
+  ];
+
+  async onModuleInit() {
+    this.logger.log('Initializing MediasoupService...');
+    await this.createWorkers();
+    this.logger.log('MediasoupService loaded.');
+  }
+
+  private async createWorkers(): Promise<void> {
+    // TODO: Load this from the application config instead of hard-coding
+    const numWorkers = 1;
+
+    for (let i = 0; i < numWorkers; i++) {
+      const worker = await mediasoup.createWorker({
+        logLevel: 'warn',
+        logTags: ['rtp', 'srtp', 'rtcp'],
+      });
+
+      worker.on('died', (error) => {
+        this.logger.error(`Worker ${worker.pid} died`, error);
+        // TODO: spawn replacement instead of quitting
+        process.exit(1);
+      });
+
+      this.workers.push(worker);
+      this.logger.log(`Worker ${worker.pid} created`);
+    }
+  }
+
+  private getNextWorker(): Worker {
+    const worker = this.workers[this.workerIndex];
+    this.workerIndex = (this.workerIndex + 1) % this.workers.length;
+    return worker;
+  }
+
+  async createRouter(): Promise<Router> {
+    const worker = this.getNextWorker();
+    const router = await worker.createRouter({ mediaCodecs: this.mediaCodecs });
+    this.logger.log(`Router ${router.id} created on worker ${worker.pid}`);
+    return router;
+  }
+}
