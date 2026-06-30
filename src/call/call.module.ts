@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { CallService } from './call.service';
+import { WorkerService } from './worker.service';
 
 @Module({
-  providers: [CallService],
+  providers: [WorkerService],
 })
 export class CallModule {}
