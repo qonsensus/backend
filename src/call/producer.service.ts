@@ -1,0 +1,39 @@
+import { Peer } from '../mediasoup/interfaces/peer.interface';
+import { MediaKind, RtpParameters } from 'mediasoup/types';
+import { Logger } from '@nestjs/common';
+
+export class ProducerService {
+  logger = new Logger(ProducerService.name);
+
+  async createProducer(
+    peer: Peer,
+    transportId: string,
+    kind: MediaKind,
+    rtpParameters: RtpParameters,
+    appData: Record<string, any>,
+  ): Promise<string> {
+    const transport = peer.transports.get(transportId);
+    if (!transport) throw new Error(`Transport ${transportId} not found`);
+
+    const producer = await transport.produce({ kind, rtpParameters, appData });
+
+    producer.on('transportclose', () => {
+      this.logger.log(`Producer ${producer.id} transport closed`);
+      producer.close();
+      peer.producers.delete(producer.id);
+    });
+
+    peer.producers.set(producer.id, producer);
+    this.logger.log(`Producer ${producer.id} (${kind}) created`);
+    return producer.id;
+  }
+
+  closeProducer(peer: Peer, producerId: string): void {
+    const producer = peer.producers.get(producerId);
+    if (!producer) throw new Error(`Producer ${producerId} not found`);
+
+    producer.close();
+    peer.producers.delete(producerId);
+    this.logger.log(`Producer ${producerId} closed by peer "${peer.socketId}"`);
+  }
+}
