@@ -1,5 +1,3 @@
-import { Room } from '../mediasoup/interfaces/room.interface';
-import { Peer } from '../mediasoup/interfaces/peer.interface';
 import { createHmac } from 'node:crypto';
 import { DtlsParameters } from 'mediasoup/types';
 import {
@@ -9,6 +7,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import dns from 'dns/promises';
 import { Logger } from '@nestjs/common';
+import { Room } from './interfaces/room.interface';
+import { Peer } from './interfaces/peer.interface';
 
 export class TransportService {
   logger = new Logger(TransportService.name);

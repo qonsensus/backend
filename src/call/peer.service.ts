@@ -1,6 +1,6 @@
-import { Room } from '../mediasoup/interfaces/room.interface';
-import { Peer } from '../mediasoup/interfaces/peer.interface';
 import { Logger } from '@nestjs/common';
+import { Room } from './interfaces/room.interface';
+import { Peer } from './interfaces/peer.interface';
 
 export class PeerService {
   logger = new Logger(PeerService.name);
@@ -13,7 +13,7 @@ export class PeerService {
       consumers: new Map(),
     };
     room.peers.set(socketId, peer);
-    this.logger.log(`Peer "${socketId}" joined room "${room.roomId}"`);
+    this.logger.log(`Peer "${socketId}" joined room "${room.id}"`);
     return peer;
   }
 
