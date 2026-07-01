@@ -1,6 +1,6 @@
 import { WorkerService } from './worker.service';
-import { Room } from './interfaces/room.interface';
 import { Logger } from '@nestjs/common';
+import { Room } from './interfaces/room.interface';
 
 export class RoomService {
   logger = new Logger(RoomService.name);

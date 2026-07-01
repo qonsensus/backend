@@ -1,4 +1,3 @@
-import { Room } from '../mediasoup/interfaces/room.interface';
 import {
   MediaKind,
   Producer,
@@ -6,6 +5,7 @@ import {
   RtpParameters,
 } from 'mediasoup/types';
 import { Peer } from '../mediasoup/interfaces/peer.interface';
+import { Room } from './interfaces/room.interface';
 
 export class ConsumerService {
   getProducerById(room: Room, producerId: string): Producer | null {

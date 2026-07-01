@@ -31,6 +31,9 @@ export class AuthService {
     }
     const user = await this.userRepository.findOne({
       where: { id: payload.sub },
+      relations: {
+        profile: true,
+      },
     });
     if (!user) throw new NotFoundException('User not found');
     return user;

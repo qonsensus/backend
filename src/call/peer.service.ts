@@ -1,13 +1,15 @@
 import { Logger } from '@nestjs/common';
 import { Room } from './interfaces/room.interface';
 import { Peer } from './interfaces/peer.interface';
+import { Profile } from '../entities/profile.entity';
 
 export class PeerService {
   logger = new Logger(PeerService.name);
 
-  addPeer(room: Room, socketId: string): Peer {
+  addPeer(room: Room, socketId: string, userProfile: Profile): Peer {
     const peer: Peer = {
       socketId,
+      userProfile,
       transports: new Map(),
       producers: new Map(),
       consumers: new Map(),
