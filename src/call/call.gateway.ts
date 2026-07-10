@@ -24,6 +24,7 @@ import { ConnectTransportDto } from './dtos/connectTransport.dto';
 import { ProduceDto } from './dtos/produce.dto';
 import { ConsumeDto } from './dtos/consume.dto';
 import { ResumeConsumerDto } from './dtos/resumeConsumer.dto';
+import { CloseProducerDto } from './dtos/closeProducer.dto';
 
 @WebSocketGateway({
   cors: { origin: '*' }, // TODO: make this configurable
@@ -207,6 +208,32 @@ export class CallGateway implements OnGatewayDisconnect {
 
       await this.consumerService.resumeConsumer(peer, consumerId);
       return { resumed: true };
+    } catch (err) {
+      throw new WsException((err as Error).message);
+    }
+  }
+
+  @SubscribeMessage('closeProducer')
+  handleCloseProducer(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() { roomId, producerId }: CloseProducerDto,
+  ) {
+    try {
+      const room = this.roomService.getRoom(roomId);
+      if (!room) throw new Error(`Room ${roomId} not found`);
+
+      const peer = this.peerService.getPeer(room, socket.id);
+      if (!peer) throw new Error(`Peer not found`);
+
+      this.producerService.closeProducer(peer, producerId);
+
+      // Tell every other peer to remove the video/audio element for this producer
+      socket.to(roomId).emit('producerClosed', {
+        producerId,
+        socketId: socket.id,
+      });
+
+      return { closed: true };
     } catch (err) {
       throw new WsException((err as Error).message);
     }
