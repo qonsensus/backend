@@ -1,6 +1,6 @@
-import { Peer } from '../mediasoup/interfaces/peer.interface';
 import { MediaKind, RtpParameters } from 'mediasoup/types';
 import { Logger } from '@nestjs/common';
+import { Peer } from './interfaces/peer.interface';
 
 export class ProducerService {
   logger = new Logger(ProducerService.name);

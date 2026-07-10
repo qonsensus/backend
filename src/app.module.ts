@@ -8,7 +8,6 @@ import { ProfileModule } from './profile/profile.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ChatModule } from './chat/chat.module';
 import { dataSourceOptions } from './database/data-source';
-import { MediasoupModule } from './mediasoup/mediasoup.module';
 import { ConfigModule } from '@nestjs/config';
 import { CallModule } from './call/call.module';
 
@@ -22,7 +21,6 @@ import { CallModule } from './call/call.module';
     ProfileModule,
     NotificationsModule,
     ChatModule,
-    MediasoupModule,
     CallModule,
   ],
   controllers: [AppController],

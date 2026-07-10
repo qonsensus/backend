@@ -4,8 +4,8 @@ import {
   RtpCapabilities,
   RtpParameters,
 } from 'mediasoup/types';
-import { Peer } from '../mediasoup/interfaces/peer.interface';
 import { Room } from './interfaces/room.interface';
+import { Peer } from './interfaces/peer.interface';
 
 export class ConsumerService {
   getProducerById(room: Room, producerId: string): Producer | null {

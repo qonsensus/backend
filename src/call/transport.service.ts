@@ -1,14 +1,12 @@
 import { createHmac } from 'node:crypto';
 import { DtlsParameters } from 'mediasoup/types';
-import {
-  IceServerCredential,
-  TransportOptions,
-} from '../mediasoup/room.service';
 import { ConfigService } from '@nestjs/config';
 import dns from 'dns/promises';
 import { Logger } from '@nestjs/common';
 import { Room } from './interfaces/room.interface';
 import { Peer } from './interfaces/peer.interface';
+import { TransportOptions } from './interfaces/transportOpts.interface';
+import { IceCreds } from './interfaces/iceCreds.interface';
 
 export class TransportService {
   logger = new Logger(TransportService.name);
@@ -36,7 +34,7 @@ export class TransportService {
 
     // Build TURN credentials for the CLIENT — mediasoup itself does NOT use
     // iceServers; only the browser's RTCPeerConnection does.
-    const iceServers: IceServerCredential[] = [];
+    const iceServers: IceCreds[] = [];
 
     if (this.configService.get<string>('NODE_ENV') === 'production') {
       const turnDomain = this.configService.getOrThrow<string>('TURN_HOST');
