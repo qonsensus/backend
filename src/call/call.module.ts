@@ -6,8 +6,10 @@ import { TransportService } from './transport.service';
 import { PeerService } from './peer.service';
 import { ProducerService } from './producer.service';
 import { ConsumerService } from './consumer.service';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
+  imports: [AuthModule],
   providers: [
     CallGateway,
     WorkerService,
