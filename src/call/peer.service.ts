@@ -23,19 +23,19 @@ export class PeerService {
     return room.peers.get(socketId);
   }
 
-  // Returns all existing producers in a room, excluding the requesting peer.
-  // Used to let a newly joined peer know who they can consume.
-  getOtherProducers(
+  getOtherPeers(
     room: Room,
     excludeSocketId: string,
-  ): Array<{ producerId: string; socketId: string }> {
-    const result: Array<{ producerId: string; socketId: string }> = [];
+  ): Array<Omit<Peer, 'consumers' | 'transports'>> {
+    const result: Array<Omit<Peer, 'consumers' | 'transports'>> = [];
 
     for (const [socketId, peer] of room.peers) {
       if (socketId === excludeSocketId) continue;
-      for (const producerId of peer.producers.keys()) {
-        result.push({ producerId, socketId });
-      }
+      result.push({
+        producers: peer.producers,
+        socketId: peer.socketId,
+        userProfile: peer.userProfile,
+      });
     }
 
     return result;

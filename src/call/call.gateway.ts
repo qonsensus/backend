@@ -78,14 +78,11 @@ export class CallGateway implements OnGatewayDisconnect {
       this.peerService.addPeer(room, socket.id, userProfile);
 
       // get existing producers in the room
-      const existingProducers = this.peerService.getOtherProducers(
-        room,
-        socket.id,
-      );
+      const otherPeers = this.peerService.getOtherPeers(room, socket.id);
 
       return {
         rtpCapabilities: this.workerService.getRtpCapabilities(),
-        existingProducers,
+        otherPeers,
       };
     } catch (err) {
       this.logger.error(`Error in handleJoinRoom: ${(err as Error).message}`);
