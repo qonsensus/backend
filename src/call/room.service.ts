@@ -1,5 +1,5 @@
 import { WorkerService } from './worker.service';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { RoomDto } from './dtos/room.dto';
 
 @Injectable()
@@ -7,7 +7,7 @@ export class RoomService {
   logger = new Logger(RoomService.name);
   rooms: Map<string, RoomDto> = new Map();
 
-  constructor(private readonly workerService: WorkerService) {}
+  constructor(@Inject() private readonly workerService: WorkerService) {}
 
   async getOrCreateRoom(roomId: string): Promise<RoomDto> {
     // Check if room already exists and if so return it

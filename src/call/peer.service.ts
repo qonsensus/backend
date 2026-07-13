@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RoomDto } from './dtos/room.dto';
 import { Profile } from '../entities/profile.entity';
-import { PeerDto } from './dtos/peer.dto';
+import { OtherPeerDto, PeerDto } from './dtos/peer.dto';
 
 @Injectable()
 export class PeerService {
@@ -24,16 +24,18 @@ export class PeerService {
     return room.peers.get(socketId);
   }
 
-  getOtherPeers(
-    room: RoomDto,
-    excludeSocketId: string,
-  ): Array<Omit<PeerDto, 'consumers' | 'transports'>> {
-    const result: Array<Omit<PeerDto, 'consumers' | 'transports'>> = [];
+  getOtherPeers(room: RoomDto, excludeSocketId: string): OtherPeerDto[] {
+    const result: OtherPeerDto[] = [];
 
     for (const [socketId, peer] of room.peers) {
       if (socketId === excludeSocketId) continue;
+      console.log(peer.producers);
+      const producerIds: string[] = [];
+      for (const producerId of peer.producers.keys()) {
+        producerIds.push(producerId);
+      }
       result.push({
-        producers: peer.producers,
+        producers: producerIds,
         socketId: peer.socketId,
         userProfile: peer.userProfile,
       });

@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   Router,
-  RtpCapabilities,
-  RtpCodecCapability,
+  RouterRtpCapabilities,
+  RouterRtpCodecCapability,
   Worker,
 } from 'mediasoup/types';
 import * as mediasoup from 'mediasoup';
@@ -16,18 +16,17 @@ export class WorkerService {
   /**
    * Get the RTP Capabilities.
    */
-  getRtpCapabilities(): RtpCapabilities {
-    const voiceCodecs: RtpCodecCapability[] = [
+  getRtpCapabilities(): RouterRtpCapabilities {
+    const voiceCodecs: RouterRtpCodecCapability[] = [
       {
         kind: 'audio',
         mimeType: 'audio/opus',
-        preferredPayloadType: 0,
         clockRate: 48000,
         channels: 2,
         rtcpFeedback: [{ type: 'nack' }, { type: 'transport-cc' }],
       },
     ];
-    const videoCodecs: RtpCodecCapability[] = [
+    const videoCodecs: RouterRtpCodecCapability[] = [
       {
         kind: 'video',
         mimeType: 'video/VP9',
@@ -39,7 +38,6 @@ export class WorkerService {
           { type: 'goog-remb' },
           { type: 'transport-cc' },
         ],
-        preferredPayloadType: 0,
       },
       {
         kind: 'video',
@@ -52,7 +50,6 @@ export class WorkerService {
           { type: 'goog-remb' },
           { type: 'transport-cc' },
         ],
-        preferredPayloadType: 0,
       },
     ];
     return {
@@ -81,14 +78,17 @@ export class WorkerService {
     }
   }
 
-  private getNextWorker(): Worker {
+  private async getNextWorker(): Promise<Worker> {
+    if (this.workers.length === 0) {
+      await this.createWorkers();
+    }
     const worker = this.workers[this.workerIndex];
     this.workerIndex = (this.workerIndex + 1) % this.workers.length;
     return worker;
   }
 
   async createRouter(): Promise<Router> {
-    const worker = this.getNextWorker();
+    const worker = await this.getNextWorker();
     const router = await worker.createRouter({
       mediaCodecs: this.getRtpCapabilities().codecs,
     });

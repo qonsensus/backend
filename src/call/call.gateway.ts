@@ -82,7 +82,7 @@ export class CallGateway implements OnGatewayDisconnect {
       const otherPeers = this.peerService.getOtherPeers(room, socket.id);
 
       return {
-        rtpCapabilities: this.workerService.getRtpCapabilities(),
+        rtpCapabilities: room.router.rtpCapabilities,
         otherPeers,
       };
     } catch (err) {

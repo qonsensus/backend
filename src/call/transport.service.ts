@@ -2,7 +2,7 @@ import { createHmac } from 'node:crypto';
 import { DtlsParameters } from 'mediasoup/types';
 import { ConfigService } from '@nestjs/config';
 import dns from 'dns/promises';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { RoomDto } from './dtos/room.dto';
 import { TransportOptionsDto } from './dtos/transportOpts.dto';
 import { IceCredsDto } from './dtos/iceCreds.dto';
@@ -12,7 +12,7 @@ import { PeerDto } from './dtos/peer.dto';
 export class TransportService {
   logger = new Logger(TransportService.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(@Inject() private readonly configService: ConfigService) {}
 
   private async resolveAnnouncedIp(): Promise<string> {
     // For local development just return 127.0.0.1
