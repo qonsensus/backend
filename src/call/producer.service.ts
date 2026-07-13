@@ -1,7 +1,8 @@
 import { MediaKind, RtpParameters } from 'mediasoup/types';
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PeerDto } from './dtos/peer.dto';
 
+@Injectable()
 export class ProducerService {
   logger = new Logger(ProducerService.name);
 

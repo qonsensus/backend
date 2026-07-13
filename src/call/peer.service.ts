@@ -1,8 +1,9 @@
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RoomDto } from './dtos/room.dto';
 import { Profile } from '../entities/profile.entity';
 import { PeerDto } from './dtos/peer.dto';
 
+@Injectable()
 export class PeerService {
   logger = new Logger(PeerService.name);
 

@@ -1,7 +1,8 @@
 import { WorkerService } from './worker.service';
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RoomDto } from './dtos/room.dto';
 
+@Injectable()
 export class RoomService {
   logger = new Logger(RoomService.name);
   rooms: Map<string, RoomDto> = new Map();

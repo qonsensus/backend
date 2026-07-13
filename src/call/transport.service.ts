@@ -2,12 +2,13 @@ import { createHmac } from 'node:crypto';
 import { DtlsParameters } from 'mediasoup/types';
 import { ConfigService } from '@nestjs/config';
 import dns from 'dns/promises';
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RoomDto } from './dtos/room.dto';
 import { TransportOptionsDto } from './dtos/transportOpts.dto';
 import { IceCredsDto } from './dtos/iceCreds.dto';
 import { PeerDto } from './dtos/peer.dto';
 
+@Injectable()
 export class TransportService {
   logger = new Logger(TransportService.name);
 

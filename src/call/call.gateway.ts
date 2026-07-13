@@ -68,7 +68,7 @@ export class CallGateway implements OnGatewayDisconnect {
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
     @ConnectedSocket() socket: Socket,
-    payload: RoomQueryDto,
+    @MessageBody() payload: RoomQueryDto,
   ): Promise<JoinRoomResponseWsDto> {
     try {
       // join socket room to send and recieve messages

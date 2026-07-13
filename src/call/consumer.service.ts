@@ -6,7 +6,9 @@ import {
 } from 'mediasoup/types';
 import { RoomDto } from './dtos/room.dto';
 import { PeerDto } from './dtos/peer.dto';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class ConsumerService {
   getProducerById(room: RoomDto, producerId: string): Producer | null {
     for (const peer of room.peers.values()) {
