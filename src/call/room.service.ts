@@ -1,24 +1,24 @@
 import { WorkerService } from './worker.service';
 import { Logger } from '@nestjs/common';
-import { Room } from './interfaces/room.interface';
+import { RoomDto } from './dtos/room.dto';
 
 export class RoomService {
   logger = new Logger(RoomService.name);
-  rooms: Map<string, Room> = new Map();
+  rooms: Map<string, RoomDto> = new Map();
 
   constructor(private readonly workerService: WorkerService) {}
 
-  async getOrCreateRoom(roomId: string): Promise<Room> {
+  async getOrCreateRoom(roomId: string): Promise<RoomDto> {
     // Check if room already exists and if so return it
     if (this.rooms.has(roomId)) {
-      return this.rooms.get(roomId) as Room;
+      return this.rooms.get(roomId) as RoomDto;
     }
 
     // create router
     const router = await this.workerService.createRouter();
 
     // create room
-    const room: Room = {
+    const room: RoomDto = {
       id: roomId,
       router,
       peers: new Map(),
@@ -31,9 +31,9 @@ export class RoomService {
     return room;
   }
 
-  getRoom(roomId: string): Room {
+  getRoom(roomId: string): RoomDto {
     if (this.rooms.has(roomId)) {
-      return this.rooms.get(roomId) as Room;
+      return this.rooms.get(roomId) as RoomDto;
     } else {
       this.logger.warn(`Room with id ${roomId} not found`);
       throw new Error(`Room with id ${roomId} not found`);

@@ -4,11 +4,11 @@ import {
   RtpCapabilities,
   RtpParameters,
 } from 'mediasoup/types';
-import { Room } from './interfaces/room.interface';
-import { Peer } from './interfaces/peer.interface';
+import { RoomDto } from './dtos/room.dto';
+import { PeerDto } from './dtos/peer.dto';
 
 export class ConsumerService {
-  getProducerById(room: Room, producerId: string): Producer | null {
+  getProducerById(room: RoomDto, producerId: string): Producer | null {
     for (const peer of room.peers.values()) {
       const producer = peer.producers.get(producerId);
       if (producer) {
@@ -19,8 +19,8 @@ export class ConsumerService {
   }
 
   async createConsumer(
-    room: Room,
-    consumerPeer: Peer,
+    room: RoomDto,
+    consumerPeer: PeerDto,
     transportId: string,
     producerId: string,
     rtpCapabilities: RtpCapabilities,
@@ -72,7 +72,7 @@ export class ConsumerService {
     };
   }
 
-  async resumeConsumer(peer: Peer, consumerId: string): Promise<void> {
+  async resumeConsumer(peer: PeerDto, consumerId: string): Promise<void> {
     const consumer = peer.consumers.get(consumerId);
     if (!consumer) throw new Error(`Consumer ${consumerId} not found`);
     await consumer.resume();

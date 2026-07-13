@@ -1,13 +1,13 @@
 import { Logger } from '@nestjs/common';
-import { Room } from './interfaces/room.interface';
-import { Peer } from './interfaces/peer.interface';
+import { RoomDto } from './dtos/room.dto';
 import { Profile } from '../entities/profile.entity';
+import { PeerDto } from './dtos/peer.dto';
 
 export class PeerService {
   logger = new Logger(PeerService.name);
 
-  addPeer(room: Room, socketId: string, userProfile: Profile): Peer {
-    const peer: Peer = {
+  addPeer(room: RoomDto, socketId: string, userProfile: Profile): PeerDto {
+    const peer: PeerDto = {
       socketId,
       userProfile,
       transports: new Map(),
@@ -19,15 +19,15 @@ export class PeerService {
     return peer;
   }
 
-  getPeer(room: Room, socketId: string): Peer | undefined {
+  getPeer(room: RoomDto, socketId: string): PeerDto | undefined {
     return room.peers.get(socketId);
   }
 
   getOtherPeers(
-    room: Room,
+    room: RoomDto,
     excludeSocketId: string,
-  ): Array<Omit<Peer, 'consumers' | 'transports'>> {
-    const result: Array<Omit<Peer, 'consumers' | 'transports'>> = [];
+  ): Array<Omit<PeerDto, 'consumers' | 'transports'>> {
+    const result: Array<Omit<PeerDto, 'consumers' | 'transports'>> = [];
 
     for (const [socketId, peer] of room.peers) {
       if (socketId === excludeSocketId) continue;

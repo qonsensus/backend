@@ -1,7 +1,7 @@
 import { RtpCapabilities } from 'mediasoup/types';
-import { Peer } from '../interfaces/peer.interface';
+import { PeerDto } from './peer.dto';
 
 export class JoinRoomResponseWsDto {
   rtpCapabilities: RtpCapabilities;
-  otherPeers: Omit<Peer, 'consumers' | 'transports'>[];
+  otherPeers: Omit<PeerDto, 'consumers' | 'transports'>[];
 }

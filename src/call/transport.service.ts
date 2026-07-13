@@ -3,10 +3,10 @@ import { DtlsParameters } from 'mediasoup/types';
 import { ConfigService } from '@nestjs/config';
 import dns from 'dns/promises';
 import { Logger } from '@nestjs/common';
-import { Room } from './interfaces/room.interface';
-import { Peer } from './interfaces/peer.interface';
-import { TransportOptions } from './interfaces/transportOpts.interface';
-import { IceCreds } from './interfaces/iceCreds.interface';
+import { RoomDto } from './dtos/room.dto';
+import { TransportOptionsDto } from './dtos/transportOpts.dto';
+import { IceCredsDto } from './dtos/iceCreds.dto';
+import { PeerDto } from './dtos/peer.dto';
 
 export class TransportService {
   logger = new Logger(TransportService.name);
@@ -26,15 +26,15 @@ export class TransportService {
   }
 
   async createWebRtcTransport(
-    room: Room,
-    peer: Peer,
-  ): Promise<TransportOptions> {
+    room: RoomDto,
+    peer: PeerDto,
+  ): Promise<TransportOptionsDto> {
     // Re-resolve the domain every time so a dynamic IP is always fresh.
     const announcedIp = await this.resolveAnnouncedIp();
 
     // Build TURN credentials for the CLIENT — mediasoup itself does NOT use
     // iceServers; only the browser's RTCPeerConnection does.
-    const iceServers: IceCreds[] = [];
+    const iceServers: IceCredsDto[] = [];
 
     if (this.configService.get<string>('NODE_ENV') === 'production') {
       const turnDomain = this.configService.getOrThrow<string>('TURN_HOST');
@@ -99,7 +99,7 @@ export class TransportService {
   }
 
   async connectTransport(
-    peer: Peer,
+    peer: PeerDto,
     transportId: string,
     dtlsParameters: DtlsParameters,
   ): Promise<void> {

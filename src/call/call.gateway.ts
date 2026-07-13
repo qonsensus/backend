@@ -25,6 +25,7 @@ import { ProduceDto } from './dtos/produce.dto';
 import { ConsumeDto } from './dtos/consume.dto';
 import { ResumeConsumerDto } from './dtos/resumeConsumer.dto';
 import { CloseProducerDto } from './dtos/closeProducer.dto';
+import { JoinRoomResponseWsDto } from './dtos/joinRoomResponseWs.dto';
 
 @WebSocketGateway({
   cors: { origin: '*' }, // TODO: make this configurable
@@ -68,7 +69,7 @@ export class CallGateway implements OnGatewayDisconnect {
   async handleJoinRoom(
     @ConnectedSocket() socket: Socket,
     payload: RoomQueryDto,
-  ) {
+  ): Promise<JoinRoomResponseWsDto> {
     try {
       // join socket room to send and recieve messages
       const userProfile = await this.joinSocketRoom(socket, payload.roomId);

@@ -1,11 +1,11 @@
 import { WebRtcTransport } from 'mediasoup/types';
-import { IceCreds } from './iceCreds.interface';
+import { IceCredsDto } from './iceCreds.dto';
 
-export interface TransportOptions {
+export class TransportOptionsDto {
   id: string;
   iceParameters: WebRtcTransport['iceParameters'];
   iceCandidates: WebRtcTransport['iceCandidates'];
   dtlsParameters: WebRtcTransport['dtlsParameters'];
   /** Pass these directly to the mediasoup-client Device / RTCPeerConnection */
-  iceServers: IceCreds[] | null;
+  iceServers: IceCredsDto[] | null;
 }

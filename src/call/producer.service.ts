@@ -1,12 +1,12 @@
 import { MediaKind, RtpParameters } from 'mediasoup/types';
 import { Logger } from '@nestjs/common';
-import { Peer } from './interfaces/peer.interface';
+import { PeerDto } from './dtos/peer.dto';
 
 export class ProducerService {
   logger = new Logger(ProducerService.name);
 
   async createProducer(
-    peer: Peer,
+    peer: PeerDto,
     transportId: string,
     kind: MediaKind,
     rtpParameters: RtpParameters,
@@ -28,7 +28,7 @@ export class ProducerService {
     return producer.id;
   }
 
-  closeProducer(peer: Peer, producerId: string): void {
+  closeProducer(peer: PeerDto, producerId: string): void {
     const producer = peer.producers.get(producerId);
     if (!producer) throw new Error(`Producer ${producerId} not found`);
 
