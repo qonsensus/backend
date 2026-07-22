@@ -34,6 +34,7 @@ import { JoinRoomResponseWsDto } from './dtos/joinRoomResponseWs.dto';
 export class CallGateway implements OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   logger = new Logger(CallGateway.name);
+  private readonly socketRoomMap = new Map<string, string>();
 
   constructor(
     private readonly consumerService: ConsumerService,
@@ -57,11 +58,22 @@ export class CallGateway implements OnGatewayDisconnect {
 
     socket.data = { user };
     await socket.join(roomId);
+
+    this.socketRoomMap.set(socket.id, roomId);
+
     return user.profile;
   }
 
   handleDisconnect(socket: Socket) {
-    // TODO: cleanup
+    const roomId = this.socketRoomMap.get(socket.id);
+    if (!roomId) return;
+    const room = this.roomService.getRoom(roomId);
+
+    this.socketRoomMap.delete(socket.id);
+    this.peerService.removePeer(room, socket.id);
+
+    // Let remaining peers know this person left so they can remove the video element
+    this.server.to(roomId).emit('peerLeft', { socketId: socket.id });
     this.logger.log(`Socket ${socket.id} disconnected from /call`);
   }
 

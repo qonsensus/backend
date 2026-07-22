@@ -43,4 +43,23 @@ export class PeerService {
 
     return result;
   }
+
+  removePeer(room: RoomDto, socketId: string): void {
+    const peer = room.peers.get(socketId);
+    if (!peer) return;
+
+    // closes producers and consumers automatically
+    for (const transport of peer.transports.values()) {
+      transport.close();
+    }
+
+    room.peers.delete(socketId);
+    this.logger.log(`Peer "${socketId}" removed from room "${room.id}"`);
+
+    // remove room if now empty
+    if (room.peers.size === 0) {
+      room.router.close();
+      this.logger.log(`Room "${room.id}" closed (empty)`);
+    }
+  }
 }
