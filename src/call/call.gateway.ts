@@ -26,6 +26,7 @@ import { ConsumeDto } from './dtos/consume.dto';
 import { ResumeConsumerDto } from './dtos/resumeConsumer.dto';
 import { CloseProducerDto } from './dtos/closeProducer.dto';
 import { JoinRoomResponseWsDto } from './dtos/joinRoomResponseWs.dto';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @WebSocketGateway({
   cors: { origin: '*' }, // TODO: make this configurable
@@ -37,6 +38,7 @@ export class CallGateway implements OnGatewayDisconnect {
   private readonly socketRoomMap = new Map<string, string>();
 
   constructor(
+    private readonly notificationsGateway: NotificationsGateway,
     private readonly consumerService: ConsumerService,
     private readonly peerService: PeerService,
     private readonly producerService: ProducerService,
@@ -86,12 +88,22 @@ export class CallGateway implements OnGatewayDisconnect {
       // join socket room to send and recieve messages
       const userProfile = await this.joinSocketRoom(socket, payload.roomId);
       // get or create room
-      const room = await this.roomService.getOrCreateRoom(payload.roomId);
+      const { room, created } = await this.roomService.getOrCreateRoom(
+        payload.roomId,
+      );
       // add peer
       this.peerService.addPeer(room, socket.id, userProfile);
 
       // get existing producers in the room
       const otherPeers = this.peerService.getOtherPeers(room, socket.id);
+
+      // if room is newly created notify all participants
+      if (created) {
+        await this.notificationsGateway.notifyCall(
+          payload.roomId,
+          userProfile.ownerId,
+        );
+      }
 
       return {
         rtpCapabilities: room.router.rtpCapabilities,

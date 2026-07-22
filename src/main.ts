@@ -10,6 +10,7 @@ import { IncomingFriendRequestWsDto } from './notifications/dtos/incomingFriendR
 import { DataSource } from 'typeorm';
 import { SendMessageWsDto } from './chat/dtos/sendMessage.ws.dto';
 import { JoinRoomResponseWsDto } from './call/dtos/joinRoomResponseWs.dto';
+import { IncomingCallWsDto } from './notifications/dtos/incomingCall.ws.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -37,6 +38,7 @@ async function bootstrap() {
         IncomingFriendRequestWsDto,
         SendMessageWsDto,
         JoinRoomResponseWsDto,
+        IncomingCallWsDto,
       ],
     });
   SwaggerModule.setup('/docs', app, documentFactory, swaggerUiOptions);

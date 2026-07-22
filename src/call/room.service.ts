@@ -9,10 +9,12 @@ export class RoomService {
 
   constructor(@Inject() private readonly workerService: WorkerService) {}
 
-  async getOrCreateRoom(roomId: string): Promise<RoomDto> {
+  async getOrCreateRoom(
+    roomId: string,
+  ): Promise<{ room: RoomDto; created: boolean }> {
     // Check if room already exists and if so return it
     if (this.rooms.has(roomId)) {
-      return this.rooms.get(roomId) as RoomDto;
+      return { room: this.rooms.get(roomId) as RoomDto, created: false };
     }
 
     // create router
@@ -29,7 +31,7 @@ export class RoomService {
     this.rooms.set(roomId, room);
     this.logger.log(`Created new room with id ${roomId}`);
 
-    return room;
+    return { room, created: true };
   }
 
   getRoom(roomId: string): RoomDto {

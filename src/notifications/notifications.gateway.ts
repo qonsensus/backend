@@ -8,6 +8,10 @@ import { AuthService } from '../auth/auth.service';
 import { IncomingFriendRequestWsDto } from './dtos/incomingFriendRequest.ws.dto';
 import { ChatDto } from '../chat/dtos/chat.dto';
 import { ChatMessageDto } from '../chat/dtos/chatMessage.dto';
+import { IncomingCallWsDto } from './dtos/incomingCall.ws.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Chat } from '../entities/chat.entity';
+import { Repository } from 'typeorm';
 
 @WebSocketGateway({
   cors: {
@@ -15,7 +19,10 @@ import { ChatMessageDto } from '../chat/dtos/chatMessage.dto';
   },
 })
 export class NotificationsGateway implements OnGatewayConnection {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    @InjectRepository(Chat) private chatRepository: Repository<Chat>,
+  ) {}
 
   @WebSocketServer()
   server: Server;
@@ -62,5 +69,35 @@ export class NotificationsGateway implements OnGatewayConnection {
       const room = `user:${recipientId}`;
       this.server.to(room).emit('newMessage', payload);
     });
+  }
+
+  async notifyCall(chatId: string, callerId: string) {
+    const chat = await this.chatRepository.findOne({
+      where: { id: chatId },
+      relations: {
+        participants: {
+          user: {
+            profile: true,
+          },
+        },
+      },
+    });
+    const participants = chat ? chat.participants.map((p) => p.user.id) : [];
+    const filteredParticipants = participants.filter(
+      (participant) => participant !== callerId,
+    );
+    const payload: IncomingCallWsDto = {
+      chatId,
+      callerAvatarUrl:
+        chat?.participants.find((p) => p.user.id === callerId)?.user.profile
+          ?.avatarUrl || '',
+      callerDisplayName:
+        chat?.participants.find((p) => p.user.id === callerId)?.user.profile
+          ?.displayName || '',
+    };
+    for (const participantId of filteredParticipants) {
+      const room = `user:${participantId}`;
+      this.server.to(room).emit('incomingCall', payload);
+    }
   }
 }
