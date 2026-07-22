@@ -171,6 +171,7 @@ export class CallGateway implements OnGatewayDisconnect {
         producerId,
         socketId: socket.id,
         kind,
+        userProfile: peer.userProfile,
       });
 
       return { producerId };
