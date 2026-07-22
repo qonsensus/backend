@@ -2,9 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RoomDto } from './dtos/room.dto';
 import { Profile } from '../entities/profile.entity';
 import { OtherPeerDto, PeerDto } from './dtos/peer.dto';
+import { RoomService } from './room.service';
 
 @Injectable()
 export class PeerService {
+  constructor(private readonly roomService: RoomService) {}
+
   logger = new Logger(PeerService.name);
 
   addPeer(room: RoomDto, socketId: string, userProfile: Profile): PeerDto {
@@ -58,7 +61,7 @@ export class PeerService {
 
     // remove room if now empty
     if (room.peers.size === 0) {
-      room.router.close();
+      this.roomService.removeRoom(room.id);
       this.logger.log(`Room "${room.id}" closed (empty)`);
     }
   }

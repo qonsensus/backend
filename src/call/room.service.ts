@@ -40,4 +40,12 @@ export class RoomService {
       throw new Error(`Room with id ${roomId} not found`);
     }
   }
+
+  removeRoom(roomId: string): void {
+    const room = this.rooms.get(roomId);
+    if (!room) return;
+    room.router.close();
+    this.rooms.delete(roomId);
+    this.logger.log(`Room with id ${roomId} removed`);
+  }
 }
