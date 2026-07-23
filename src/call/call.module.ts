@@ -7,9 +7,10 @@ import { PeerService } from './peer.service';
 import { ProducerService } from './producer.service';
 import { ConsumerService } from './consumer.service';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, NotificationsModule],
   providers: [
     CallGateway,
     WorkerService,
