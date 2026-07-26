@@ -6,10 +6,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
-import { Server } from './server.entity';
+import { Community } from './community.entity';
 
 @Entity({ name: 'users_to_servers' })
-export class UserToServer {
+export class UserToCommunity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -22,6 +22,6 @@ export class UserToServer {
   @ManyToOne(() => User, (user) => user.servers)
   user: User;
 
-  @ManyToOne(() => Server, (server) => server.participants)
-  server: Server;
+  @ManyToOne(() => Community, (server) => server.participants)
+  community: Community;
 }

@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Server } from './server.entity';
+import { Community } from './community.entity';
 import { ChatChannelMessage } from './chatChannelMessage.entity';
 import { UserToChatChannel } from './userToChatChannel.entity';
 
@@ -21,10 +21,10 @@ export class ChatChannel {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Server, (server) => server.chatChannels, {
+  @ManyToOne(() => Community, (server) => server.chatChannels, {
     onDelete: 'CASCADE',
   })
-  server: Server;
+  community: Community;
 
   @OneToMany(() => ChatChannelMessage, (message) => message.channel)
   messages: ChatChannelMessage[];

@@ -4,8 +4,8 @@ import { User } from '../entities/user.entity';
 import { Profile } from '../entities/profile.entity';
 import { Chat } from '../entities/chat.entity';
 import { ChatMessage } from '../entities/chatMessage.entity';
-import { Server } from '../entities/server.entity';
-import { UserToServer } from '../entities/userToServer.entity';
+import { Community } from '../entities/community.entity';
+import { UserToCommunity } from '../entities/userToCommunity.entity';
 import { ChatChannel } from '../entities/chatChannel.entity';
 import { UserToChat } from '../entities/userToChat.entity';
 import { ChatChannelMessage } from '../entities/chatChannelMessage.entity';
@@ -26,8 +26,8 @@ export const dataSourceOptions: DataSourceOptions = {
     Profile,
     Chat,
     ChatMessage,
-    Server,
-    UserToServer,
+    Community,
+    UserToCommunity,
     ChatChannel,
     UserToChat,
     ChatChannelMessage,

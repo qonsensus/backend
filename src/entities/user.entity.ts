@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Profile } from './profile.entity';
-import { UserToServer } from './userToServer.entity';
+import { UserToCommunity } from './userToCommunity.entity';
 import { UserToChat } from './userToChat.entity';
 import { UserToChatChannel } from './userToChatChannel.entity';
 import { Friendship } from './friendship.entity';
@@ -36,10 +36,10 @@ export class User {
   @OneToOne(() => Profile, (profile) => profile.owner, { onDelete: 'CASCADE' })
   profile: Profile;
 
-  @OneToMany(() => UserToServer, (userToServer) => userToServer.user, {
+  @OneToMany(() => UserToCommunity, (userToServer) => userToServer.user, {
     onDelete: 'CASCADE',
   })
-  servers: UserToServer[];
+  servers: UserToCommunity[];
 
   @OneToMany(() => UserToChat, (userToChat) => userToChat.user)
   chats: UserToChat[];

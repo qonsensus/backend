@@ -6,11 +6,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserToServer } from './userToServer.entity';
+import { UserToCommunity } from './userToCommunity.entity';
 import { ChatChannel } from './chatChannel.entity';
 
 @Entity({ name: 'servers' })
-export class Server {
+export class Community {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -35,11 +35,11 @@ export class Server {
   @Column()
   bannerUrl: string;
 
-  @OneToMany(() => UserToServer, (userToServer) => userToServer.server, {
+  @OneToMany(() => UserToCommunity, (userToServer) => userToServer.community, {
     onDelete: 'CASCADE',
   })
-  participants: UserToServer[];
+  participants: UserToCommunity[];
 
-  @OneToMany(() => ChatChannel, (chatChannel) => chatChannel.server)
+  @OneToMany(() => ChatChannel, (chatChannel) => chatChannel.community)
   chatChannels: ChatChannel[];
 }
