@@ -10,6 +10,7 @@ import { ChatModule } from './chat/chat.module';
 import { dataSourceOptions } from './database/data-source';
 import { ConfigModule } from '@nestjs/config';
 import { CallModule } from './call/call.module';
+import { ServerModule } from './server/server.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CallModule } from './call/call.module';
     NotificationsModule,
     ChatModule,
     CallModule,
+    ServerModule,
   ],
   controllers: [AppController],
 })
