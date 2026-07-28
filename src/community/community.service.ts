@@ -10,6 +10,7 @@ import { User } from '../entities/user.entity';
 import { AuthService } from '../auth/auth.service';
 import { CreateCommunityDto } from './dtos/createCommunity.dto';
 import { UserToCommunity } from '../entities/userToCommunity.entity';
+import { EditCommunityDto } from './dtos/editCommunity.dto';
 
 @Injectable()
 export class CommunityService {
@@ -88,5 +89,31 @@ export class CommunityService {
       relations: { community: true, user: true },
     });
     return userToCommunities.map((entry) => entry.community);
+  }
+
+  async editCommunity(
+    communityId: string,
+    payload: EditCommunityDto,
+    userId: string,
+  ): Promise<Community> {
+    // check if the user is a part of the community
+    const userToCommunity = await this.userToCommunityRepository.findOne({
+      where: {
+        user: { id: userId },
+        community: { id: communityId },
+      },
+      relations: {
+        community: true,
+        user: true,
+      },
+    });
+    // TODO: a stricter check needs to be done -> RBAC or Owner
+    if (!userToCommunity)
+      throw new ForbiddenException('User not a part of the community');
+
+    userToCommunity.community.name = payload.name;
+    userToCommunity.community.description = payload.description;
+
+    return await this.communityRepository.save(userToCommunity.community);
   }
 }
