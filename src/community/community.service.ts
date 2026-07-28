@@ -1,13 +1,8 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Community } from '../entities/community.entity';
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { AuthService } from '../auth/auth.service';
 import { CreateCommunityDto } from './dtos/createCommunity.dto';
 import { UserToCommunity } from '../entities/userToCommunity.entity';
 import { EditCommunityDto } from './dtos/editCommunity.dto';
@@ -21,7 +16,6 @@ export class CommunityService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserToCommunity)
     private readonly userToCommunityRepository: Repository<UserToCommunity>,
-    private readonly authService: AuthService,
   ) {}
 
   async createCommunity(
@@ -41,6 +35,10 @@ export class CommunityService {
     if (participants.length !== payload.participants.length) {
       throw new NotFoundException('One or more participants not found');
     }
+
+    // ensure creator is included in the participant list
+    const creatorFoundInList = participants.find((p) => p.id === creatorId);
+    if (!creatorFoundInList) participants.push(creator);
 
     // create community entity
     const community = this.communityRepository.create();
@@ -76,7 +74,9 @@ export class CommunityService {
       },
     });
     if (!userToCommunity) {
-      throw new ForbiddenException('User not a part of the community');
+      throw new NotFoundException(
+        'Community does not exist or you are not a part of it.',
+      );
     }
 
     return userToCommunity.community;
@@ -109,7 +109,9 @@ export class CommunityService {
     });
     // TODO: a stricter check needs to be done -> RBAC or Owner
     if (!userToCommunity)
-      throw new ForbiddenException('User not a part of the community');
+      throw new NotFoundException(
+        'Community does not exist or the user is not a part of it.',
+      );
 
     userToCommunity.community.name = payload.name;
     userToCommunity.community.description = payload.description;
